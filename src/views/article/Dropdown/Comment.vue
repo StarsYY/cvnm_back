@@ -20,16 +20,21 @@ export default {
     value: {
       required: true,
       type: String,
-      default: 'Original'
+      default: '原创'
     }
   },
   data() {
     return {
       typeOptions: [
-        { key: 'Original', name: 'Original' },
-        { key: 'Translation', name: 'Translation' },
-        { key: 'Reprint', name: 'Reprint' }
-      ]
+        { key: '原创', name: '原创' },
+        { key: '转载', name: '转载' },
+        { key: '翻译', name: '翻译' },
+        { key: '问题求助', name: '问题求助' },
+        { key: '行业动态', name: '行业动态' },
+        { key: '分享', name: '分享' },
+        { key: '解决方案', name: '解决方案' },
+        { key: '改进建议', name: '改进建议' }
+      ],
     }
   },
   computed: {

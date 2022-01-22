@@ -8,7 +8,7 @@
         <ERDropdown v-model="postForm.tag" />
         <CommentDropdown v-model="postForm.type" />
         <PlatformDropdown v-model="postForm.publish" />
-        <SourceUrlDropdown v-if="postForm.type != 'Original'" v-model="postForm.source" />
+        <SourceUrlDropdown v-if="postForm.type === '翻译' || postForm.type === '转载'" v-model="postForm.source" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           Publish
         </el-button>
@@ -110,9 +110,9 @@ const defaultForm = {
   cover: '',
   plateid: '',
   labelid: '',
-  tag: 'Default',
-  type: 'Original',
-  publish: 'Public',
+  tag: '',
+  type: '原创',
+  publish: '公开',
   status: 'draft',
   up: 0,
   down: 0,
@@ -259,12 +259,12 @@ export default {
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {
           if (valid) {
-            this.postForm.status = 'Publish'
-            updateArticle(this.postForm).then(response => {
+            this.postForm.status = '已发布'
+            updateArticle(this.postForm).then(() => {
               this.loading = true
               this.$notify({
                 title: '成功',
-                message: '发布文章成功',
+                message: '修改文章成功',
                 type: 'success',
                 duration: 2000
               })
@@ -279,8 +279,8 @@ export default {
       } else {
         this.$refs.postForm.validate(valid => {
           if (valid) {
-            this.postForm.status = 'Publish'
-            createArticle(this.postForm).then(response => {
+            this.postForm.status = '已发布'
+            createArticle(this.postForm).then(() => {
               this.loading = true
               this.$notify({
                 title: '成功',
@@ -311,7 +311,7 @@ export default {
         idss += this.ids[id] + ','
       }
       this.postForm.labelid = idss
-      this.postForm.status = 'Draft'
+      this.postForm.status = '草稿'
       if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.plateid === '' || this.postForm.labelid === ',') {
         this.$message({
           message: '作者和标签为必传项',
@@ -322,9 +322,9 @@ export default {
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {
           if (valid) {
-            updateArticle(this.postForm).then(response => {
+            updateArticle(this.postForm).then(() => {
               this.$message({
-                message: '保存成功',
+                message: '修改成功',
                 type: 'success',
                 showClose: true,
                 duration: 1000

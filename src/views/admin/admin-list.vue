@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.introduction" :placeholder="$t('table.introduction')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable class="filter-item" style="width: 150px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
@@ -33,6 +33,11 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
+      <el-table-column :label="$t('table.username')" prop="username" width="110px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.username }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('table.introduction')" min-width="100px">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row.id)">{{ row.introduction }}</span>
@@ -48,11 +53,6 @@
           <span>{{ row.updatetime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.username')" prop="username" width="110px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.username }}</span>
-        </template>
-      </el-table-column>
       <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
@@ -61,7 +61,13 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.online')" prop="online" align="center" width="80">
+        <template slot-scope="{row}">
+          <span v-if="row.online === 1" style="color: #13CE66">在线</span>
+          <span v-if="row.online === 0" style="color: #777">离线</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
             {{ $t('table.edit') }}
@@ -72,7 +78,7 @@
           <el-button v-if="row.status!='0'" size="mini" @click="handleModifyStatus(row)">
             {{ $t('table.disable') }}
           </el-button>
-          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id,$index)">
+          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id, row.online, $index)">
             <template #reference>
               <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
                 {{ $t('table.delete') }}
@@ -105,7 +111,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'ComplexTable',
+  name: 'AdminList',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -167,6 +173,13 @@ export default {
       this.getList()
     },
     handleModifyStatus(row) {
+      if(row.online === 1) {
+        this.$message({
+          message: '不能禁用已登录管理员',
+          type: 'warning'
+        })
+        return
+      }
       changeStatus(row).then(() => {
         this.$message({
           message: '操作成功',
@@ -190,16 +203,21 @@ export default {
       this.handleFilter()
     },
     handleCreate() {
-      // 直接跳转
       this.$router.push('/admin/admin-add')
     },
     handleUpdate(id) {
-      // 带参数跳转
-      // this.$router.push({path:'/admin/admin-edit',query:{id: id}});
       this.$router.push({ name: 'AdminEdit', params: { id: id }})
+      // this.$router.push({path:'/admin/admin-edit',query:{id: id}});
       // this.$router.push("/admin/admin-edit/" + id);
     },
-    handleDelete(id, index) {
+    handleDelete(id, online, index) {
+      if(online === 1) {
+        this.$message({
+          message: '不能删除已登录管理员',
+          type: 'warning'
+        })
+        return
+      }
       this.deleteId.id = id
       deleteAdmin(this.deleteId).then(() => {
         this.$notify({
@@ -215,13 +233,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'introduction', 'createtime', 'updatetime', 'username', 'status']
-        const filterVal = ['id', 'introduction', 'createtime', 'updatetime', 'username', 'status']
+        const tHeader = ['id', 'username', 'introduction', 'createtime', 'updatetime', 'status']
+        const filterVal = ['id', 'username', 'introduction', 'createtime', 'updatetime', 'status']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'AdminUser-list'
+          filename: 'AdminUser_list'
         })
         this.downloadLoading = false
       })

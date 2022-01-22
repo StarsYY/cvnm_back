@@ -19,16 +19,16 @@ export default {
   props: {
     value: {
       required: true,
-      default: 'Default',
+      default: '',
       type: String
     }
   },
   data() {
     return {
       tagOptions: [
-        { key: 'Default', name: 'Default' },
-        { key: 'Essence', name: 'Essence' },
-        { key: 'Recommend', name: 'Recommend' }
+        { key: '', name: '默认' },
+        { key: '精华', name: '精华' },
+        { key: '推荐', name: '推荐' }
       ]
     }
   },

@@ -71,3 +71,11 @@ export function deleteArticle(data) {
     data
   })
 }
+
+export function deleteArticleR(data) {
+  return request({
+    url: '/adm/article/deleteR',
+    method: 'post',
+    data
+  })
+}

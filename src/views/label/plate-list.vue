@@ -40,6 +40,16 @@
           <span>{{ row.superior }}</span>
         </template>
       </el-table-column>
+      <el-table-column :label="$t('table.describe')" min-width="200px">
+        <template slot-scope="{row}">
+          <span>{{ row.describe }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.articleCount')" width="80px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.articleCount }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('table.createtime')" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
@@ -50,7 +60,7 @@
           <span>{{ row.updatetime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
@@ -69,12 +79,15 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
         <el-form-item :label="$t('table.plate')" prop="plate">
-          <el-input v-model="temp.plate" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.plate" show-word-limit maxlength="10" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
         <el-form-item :label="$t('table.ancestor')">
-          <el-cascader ref="plateCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 320px" @change="setAncestor" />
+          <el-cascader ref="plateCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 100%" @change="setAncestor" />
+        </el-form-item>
+        <el-form-item :label="$t('table.describe')">
+          <el-input v-model="temp.describe" :autosize="{ minRows: 2 }" clearable show-word-limit maxlength="200" type="textarea" placeholder="描述" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -124,8 +137,11 @@ export default {
       },
       sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
       temp: {
+        id: 0,
         plate: '',
-        ancestor: '0'
+        ancestor: '0',
+        describe: '',
+        icon: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -203,8 +219,7 @@ export default {
           if (this.temp.ancestor === undefined) {
             this.temp.ancestor = 0
           }
-          createPlate(this.temp).then(() => {
-            this.getList()
+          createPlate(this.temp).then(response => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -212,6 +227,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.list.splice(this.list.length, 0, response.data)
           })
         }
       })
@@ -228,9 +244,15 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
+          if(tempData.id === tempData.ancestor) {
+            this.$message({
+              message: '不能继承自己呦',
+              type: 'warning'
+            })
+            return
+          }
           updatePlate(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -258,13 +280,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'plate', 'createtime', 'updatetime']
-        const filterVal = ['id', 'plate', 'createtime', 'updatetime']
+        const tHeader = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
+        const filterVal = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'Plate-list'
+          filename: 'Plate_List'
         })
         this.downloadLoading = false
       })

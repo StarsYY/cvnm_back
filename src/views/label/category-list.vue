@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.category" :placeholder="$t('table.category')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.rootid" style="width: 200px" clearable class="filter-item">
+      <el-select v-model="listQuery.rootid" :placeholder="$t('table.root')" style="width: 200px" clearable class="filter-item">
         <el-option v-for="(item, key) in rootOptions" :key="key" :label="item" :value="key" />
       </el-select>
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
@@ -73,12 +73,12 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
         <el-form-item :label="$t('table.category')" prop="category">
-          <el-input v-model="temp.category" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.category" maxlength="20" show-word-limit @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
         <el-form-item :label="$t('table.root')">
-          <el-select v-model="rid" style="width: 320px" class="filter-item" @change="setRootId">
+          <el-select v-model="rid" style="width: 100%" class="filter-item" @change="setRootId">
             <el-option v-for="(item, key) in rootOptions" :key="key" :label="item" :value="key" />
           </el-select>
         </el-form-item>
@@ -132,6 +132,7 @@ export default {
       sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
       rootOptions: null,
       temp: {
+        id: 0,
         category: '',
         rootid: ''
       },
@@ -187,6 +188,7 @@ export default {
       this.temp = {
         category: ''
       }
+      this.rid = ''
     },
     handleCreate() {
       this.resetTemp()
@@ -197,11 +199,16 @@ export default {
       })
     },
     createData() {
+      if(this.rid === '') {
+        this.$message({
+          message: '标签类别不能为空',
+          type: 'warning'
+        })
+        return
+      }
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.rootid = rid
-          createCategory(this.temp).then(() => {
-            this.getList()
+          createCategory(this.temp).then(response => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -209,6 +216,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.list.splice(this.list.length, 0, response.data)
           })
         }
       })
@@ -229,9 +237,9 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          updateCategory(tempData).then(() => {
+          updateCategory(tempData).then(response => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+            this.list.splice(index, 1, response.data)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -259,8 +267,8 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'category', 'createtime', 'updatetime']
-        const filterVal = ['id', 'category', 'createtime', 'updatetime']
+        const tHeader = ['id', 'category', 'superior', 'createtime', 'updatetime']
+        const filterVal = ['id', 'category', 'superior', 'createtime', 'updatetime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,

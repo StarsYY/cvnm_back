@@ -33,14 +33,14 @@
           <span>{{ row.uid }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.summary')" min-width="100px">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row.uid)">{{ row.summary }}</span>
-        </template>
-      </el-table-column>
       <el-table-column :label="$t('table.nickname')" prop="nickname" width="210px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.nickname }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.summary')" min-width="100px">
+        <template slot-scope="{row}">
+          <span class="link-type" @click="handleUpdate(row.uid)">{{ row.summary }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.createtime')" width="150px" align="center">
@@ -60,25 +60,29 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.online')" prop="islog" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span v-if="row.online === 1" style="color: #13CE66">在线</span>
+          <span v-if="row.online === 0" style="color: #777">离线</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row.uid)">
             {{ $t('table.edit') }}
           </el-button>
-          <el-button v-if="row.status!='Enable' && row.status!='Unsubscribe'" size="mini" type="success" @click="handleModifyStatus(row)">
+          <el-button v-if="row.status!='启用'" size="mini" type="success" @click="handleModifyStatus(row)">
             {{ $t('table.enable') }}
           </el-button>
-          <el-button v-if="row.status!='Disable' && row.status!='Unsubscribe'" size="mini" @click="handleModifyStatus(row)">
+          <el-button v-if="row.status!='禁用'" size="mini" @click="handleModifyStatus(row)">
             {{ $t('table.disable') }}
           </el-button>
-          <el-button v-if="row.status=='Unsubscribe'" size="mini">
-            {{ $t('table.unsubscribe') }}
-          </el-button>
 
-          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id,$index)">
+          <el-popconfirm title="此为软删除，彻底删除请点击右键" @onConfirm="handleDelete(row)">
             <template #reference>
-              <el-button v-if="row.status!='deleted'" v-model="deleteId.uid" size="mini" type="danger" style="margin-left: 10px">
-                {{ $t('table.delete') }}
+              <el-button v-if="row.status!='deleted'" v-model="deleteId.uid" size="mini" type="danger" style="margin-left: 10px" @contextmenu.right.native.prevent="handleDeleteR(row.uid, $index)">
+                <span v-if="row.isdel === 0">{{ $t('table.delete') }}</span>
+                <span v-if="row.isdel === 1">{{ $t('table.restore') }}</span>
               </el-button>
             </template>
           </el-popconfirm>
@@ -91,33 +95,30 @@
 </template>
 
 <script>
-import { fetchList, changeStatus, deleteUser } from '@/api/user'
+import { fetchList, changeStatus, deleteUser, deleteUserR } from '@/api/user'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
-  { key: 'Enable', display_name: 'Enable' },
-  { key: 'Disable', display_name: 'Disable' },
-  { key: 'Unsubscribe', display_name: 'Unsubscribe' }
+  { key: '启用', display_name: '启用' },
+  { key: '禁用', display_name: '禁用' }
 ]
 
-// arr to obj, such as { CN : "China", US : "USA" }
 const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
   acc[cur.key] = cur.display_name
   return acc
 }, {})
 
 export default {
-  name: 'ComplexTable',
+  name: 'UserList',
   components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        Enable: 'success',
-        Disable: 'info',
-        Unsubscribe: 'danger',
+        启用: 'success',
+        禁用: 'info',
         deleted: 'danger'
       }
       return statusMap[status]
@@ -143,7 +144,7 @@ export default {
         uid: null
       },
       calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
+      sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       textMap: {
         update: 'Edit',
         create: 'Create'
@@ -177,10 +178,10 @@ export default {
           message: '操作成功',
           type: 'success'
         })
-        if (row.status === 'Enable') {
-          row.status = 'Disable'
+        if (row.status === '启用') {
+          row.status = '禁用'
         } else {
-          row.status = 'Enable'
+          row.status = '启用'
         }
       })
     },
@@ -199,33 +200,63 @@ export default {
       this.handleFilter()
     },
     handleCreate() {
-      // 直接跳转
       this.$router.push('/user/user-add')
     },
     handleUpdate(uid) {
-      // 带参数跳转
-      // this.$router.push({path:'/admin/admin-edit',query:{uid: uid}});
       this.$router.push({ name: 'UserEdit', params: { uid: uid }})
-      // this.$router.push("/admin/admin-edit/" + uid);
     },
-    handleDelete(uid, index) {
-      this.deleteId.uid = uid
+    handleDelete(row) {
+      this.deleteId.uid = row.uid
       deleteUser(this.deleteId).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
+        if(row.isdel === 0) {
+          this.$notify({
+            title: '成功',
+            message: '软删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          row.isdel = 1
+        } else if(row.isdel === 1) {
+          this.$notify({
+            title: '成功',
+            message: '恢复成功',
+            type: 'success',
+            duration: 2000
+          })
+          row.isdel = 0
+        }
+      })
+    },
+    handleDeleteR(uid, index) {
+      this.$confirm(
+        '将要彻底删除这个用户，请三思而后行！',
+        'Warning',
+        {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning',
+        }
+      ).then(() => {
+        this.deleteId.uid = uid
+        deleteUserR(this.deleteId).then(() => {
+          this.$notify({
+            title: '成功',
+            message: '彻底删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1) // 列表中删除此行
+          this.total -= 1
         })
-        this.list.splice(index, 1) // 列表中删除此行
-        this.total -= 1
+      }).catch(() => {
+        console.log('close')
       })
     },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['uid', 'summary', 'createtime', 'updatetime', 'nickname', 'status']
-        const filterVal = ['uid', 'summary', 'createtime', 'updatetime', 'nickname', 'status']
+        const tHeader = ['uid', 'nickname', 'summary', 'createtime', 'updatetime', 'status']
+        const filterVal = ['uid', 'nickname', 'summary', 'createtime', 'updatetime', 'status']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
@@ -246,7 +277,7 @@ export default {
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
+      return sort === `+${key}` ? 'asc' : 'desc'
     }
   }
 }

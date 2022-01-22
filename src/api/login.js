@@ -16,9 +16,10 @@ export function getInfo(token) {
   })
 }
 
-export function logout() { // 需要完善 /layout/com.../Navber.vue
+export function logout(name) {
   return request({
     url: '/adm/logout',
-    method: 'post'
+    method: 'post',
+    params: { name }
   })
 }

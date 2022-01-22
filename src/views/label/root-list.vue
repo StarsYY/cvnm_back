@@ -65,9 +65,9 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
         <el-form-item :label="$t('table.root')" prop="root">
-          <el-input v-model="temp.root" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.root" maxlength="20" show-word-limit @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -117,6 +117,7 @@ export default {
       },
       sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
       temp: {
+        id: '',
         root: ''
       },
       dialogFormVisible: false,
@@ -181,8 +182,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          createRoot(this.temp).then(() => {
-            this.getList()
+          createRoot(this.temp).then(response => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -190,6 +190,7 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.list.splice(this.list.length, 0, response.data)
           })
         }
       })
@@ -206,9 +207,9 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          updateRoot(tempData).then(() => {
+          updateRoot(tempData).then(response => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+            this.list.splice(index, 1, response.data)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',

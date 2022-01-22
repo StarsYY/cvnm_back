@@ -164,20 +164,6 @@ export const asyncRoutes = [
         name: 'PlateList',
         meta: { title: 'platelist', icon: 'tree' }
       },
-      {
-        path: 'label-add',
-        component: () => import('@/views/label/label-add'),
-        name: 'LabelAdd',
-        meta: { title: 'labeladd', icon: 'tree' },
-        hidden: true
-      },
-      {
-        path: 'label-edit/:id',
-        component: () => import('@/views/label/label-add'),
-        name: 'LabelEdit',
-        meta: { title: 'labeledit' },
-        hidden: true
-      }
     ]
   },
 

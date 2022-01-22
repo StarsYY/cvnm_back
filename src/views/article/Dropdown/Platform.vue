@@ -19,15 +19,15 @@ export default {
   props: {
     value: {
       required: true,
-      default: 'Public',
+      default: '公开',
       type: String
     }
   },
   data() {
     return {
       publishOptions: [
-        { key: 'Public', name: 'Public' },
-        { key: 'Private', name: 'Private' }
+        { key: '公开', name: '公开' },
+        { key: '私密', name: '私密' }
       ]
     }
   },

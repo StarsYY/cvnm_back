@@ -3,9 +3,10 @@
     <el-row>
       <el-col :xs="5" :sm="5" :md="5" :lg="5" :xl="5">
         <div class="left-container">
-          <el-scrollbar>
+          <el-scrollbar height="600px">
             <div class="app-container-left">
-              <el-input v-model="filterText" :placeholder="$t('table.labelMap')" style="margin-bottom:30px;" /><el-tree
+              <el-input v-model="filterText" :placeholder="$t('table.labelMap')" style="margin-bottom:30px;" />
+              <el-tree
                 ref="plateTree"
                 :data="plateTree"
                 :props="defaultProps"
@@ -62,6 +63,9 @@
             </el-select>
             <el-select v-model="listQuery.tag" :placeholder="$t('table.tag')" clearable class="filter-item" style="width: 210px">
               <el-option v-for="item in tagOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+            </el-select>
+            <el-select v-model="listQuery.hot" :placeholder="$t('table.hot')" clearable class="filter-item" style="width: 210px">
+              <el-option v-for="item in hotOptions" :key="item.key" :label="item.display_name" :value="item.key" />
             </el-select>
             <el-select v-model="listQuery.sort" style="width: 170px" class="filter-item" @change="handleFilter">
               <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -129,7 +133,7 @@
             </el-table-column>
             <el-table-column :label="$t('table.tag')" class-name="status-col" width="100">
               <template slot-scope="{row}">
-                <el-tag :type="row.tag | statusFilter">
+                <el-tag v-if="row.tag !== ''" :type="row.tag | statusFilter">
                   {{ row.tag }}
                 </el-tag>
               </template>
@@ -149,25 +153,29 @@
                 <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
                   {{ $t('table.edit') }}
                 </el-button>
-                <el-button v-if="row.status!='Publish'" size="mini" type="success" @click="handleModifyStatus(row)">
-                  {{ $t('table.publish') }}
-                </el-button>
-                <el-button v-if="row.status!='Draft'" size="mini" @click="handleModifyStatus(row)">
+                <el-button v-if="row.status!='已发布' && row.status!='待审核'" size="mini" @click="handleModifyStatus(row)">
                   {{ $t('table.draft') }}
                 </el-button>
-                <el-button v-if="row.tag!='Essence' && row.tag!='Default'" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
+                <el-button v-if="row.status!='草稿' && row.status!='已发布'" size="mini" type="success" @click="handleModifyStatus(row)">
+                  {{ $t('table.publish') }}
+                </el-button>
+                <el-button v-if="row.status!='草稿' && row.status!='待审核'" size="mini" @click="handleModifyStatus(row)">
+                  {{ $t('table.audit') }}
+                </el-button>
+                <el-button v-if="row.tag!='精华' && row.tag!=''" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
                   {{ $t('table.essence') }}
                 </el-button>
-                <el-button v-if="row.tag!='Recommend' && row.tag!='Default'" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
+                <el-button v-if="row.tag!='推荐' && row.tag!=''" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
                   {{ $t('table.recommend') }}
                 </el-button>
-                <el-button v-if="row.tag!='Essence' && row.tag!='Recommend'" size="mini" @contextmenu.right.native.prevent="handleModifyTagR(row)">
+                <el-button v-if="row.tag!='精华' && row.tag!='推荐'" size="mini" @contextmenu.right.native.prevent="handleModifyTagR(row)">
                   {{ $t('table.default') }}
                 </el-button>
-                <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id,$index)">
+                <el-popconfirm title="此为软删除或恢复，删除后只在后台显示，彻底删除请点击右键" @onConfirm="handleDelete(row)">
                   <template #reference>
-                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
-                      {{ $t('table.delete') }}
+                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px" @contextmenu.right.native.prevent="handleDeleteR(row.id, $index)">
+                      <span v-if="row.isdel === 0">{{ $t('table.delete') }}</span>
+                      <span v-if="row.isdel === 1">{{ $t('table.restore') }}</span>
                     </el-button>
                   </template>
                 </el-popconfirm>
@@ -184,15 +192,16 @@
 
 <script>
 import SplitPane from 'vue-splitpane'
-import { fetchList, changeStatus, changeTag, changeRTag, deleteArticle } from '@/api/article'
+import { fetchList, changeStatus, changeTag, changeRTag, deleteArticle, deleteArticleR } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { ElMessageBox } from 'element-ui'
 
 const statusOptions = [
-  { key: 'Publish', display_name: 'Publish' },
-  { key: 'Draft', display_name: 'Draft' },
-  { key: 'Audit', display_name: 'Audit' }
+  { key: '已发布', display_name: '已发布' },
+  { key: '草稿', display_name: '草稿' },
+  { key: '待审核', display_name: '待审核' }
 ]
 
 const statusKeyValue = statusOptions.reduce((acc, cur) => {
@@ -207,11 +216,11 @@ export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        Publish: 'success',
-        Draft: 'info',
-        Essence: 'warning',
-        Recommend: 'warning',
-        Default: 'info',
+        已发布: 'success',
+        草稿: 'info',
+        待审核: 'danger',
+        精华: 'warning',
+        推荐: 'warning',
         deleted: 'danger'
       }
       return statusMap[status]
@@ -246,7 +255,8 @@ export default {
         type: null,
         publish: null,
         status: null,
-        tag: null
+        tag: null,
+        hot: null
       },
       showCreatetime: false,
       showUpdatetime: false,
@@ -265,10 +275,20 @@ export default {
       categoryOptions: null,
       labelOptions: null,
       statusOptions,
-      tagOptions: [{ key: 'Default', display_name: 'Default' }, { key: 'Essence', display_name: 'Essence' }, { key: 'Recommend', display_name: 'Recommend' }],
-      typeOptions: [{ key: 'Original', display_name: 'Original' }, { key: 'Reprint', display_name: 'Reprint' }, { key: 'Translation', display_name: 'Translation' }],
-      publishOptions: [{ key: 'Public', display_name: 'Public' }, { key: 'Private', display_name: 'Private' }],
-      sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
+      tagOptions: [{ key: '精华', display_name: '精华' }, { key: '推荐', display_name: '推荐' }],
+      hotOptions: [{ key: 'Top', display_name: '顶置' }, { key: 'Hot', display_name: '热门' }],
+      typeOptions: [
+        { key: '原创', display_name: '原创' },
+        { key: '转载', display_name: '转载' },
+        { key: '翻译', display_name: '翻译' },
+        { key: '问题求助', display_name: '问题求助' },
+        { key: '行业动态', display_name: '行业动态' },
+        { key: '分享', display_name: '分享' },
+        { key: '解决方案', display_name: '解决方案' },
+        { key: '改进建议', display_name: '改进建议' }
+      ],
+      publishOptions: [{ key: '公开', display_name: '公开' }, { key: '私密', display_name: '私密' }],
+      sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       textMap: {
         update: 'Edit',
         create: 'Create'
@@ -327,13 +347,13 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        console.log(response)
         this.list = response.data.items
         this.total = response.data.total
         this.plateOptions = response.data.allPlate
         this.rootOptions = response.data.allRoot
         this.categoryOptions = response.data.allCategory
         this.labelOptions = response.data.allLabel
+
         if (this.count === 1) { // 防止重复刷新列表树
           this.plateTree = response.data.plateTree
           this.treeData = response.data.labelTree
@@ -390,32 +410,39 @@ export default {
       this.getList()
     },
     handleModifyStatus(row) {
+      if(row.status === '草稿') {
+        this.$message({
+          message: '文章还没有提交，不能操作呦',
+          type: 'warning'
+        })
+        return
+      }
       changeStatus(row).then(() => {
         this.$message({
           message: '操作成功',
           type: 'success'
         })
-        if (row.status === 'Publish') {
-          row.status = 'Draft'
+        if (row.status === '已发布') {
+          row.status = '待审核'
         } else {
-          row.status = 'Publish'
+          row.status = '已发布'
         }
       })
     },
     handleModifyTag(row) {
       changeTag(row).then(() => {
-        if (row.tag === 'Essence') {
+        if (row.tag === '精华') {
           this.$message({
             message: '操作成功',
             type: 'success'
           })
-          row.tag = 'Recommend'
-        } else if (row.tag === 'Recommend') {
+          row.tag = '推荐'
+        } else if (row.tag === '推荐') {
           this.$message({
             message: '操作成功',
             type: 'success'
           })
-          row.tag = 'Essence'
+          row.tag = '精华'
         }
       })
     },
@@ -425,10 +452,10 @@ export default {
           message: '操作成功',
           type: 'success'
         })
-        if (row.tag !== 'Default') {
-          row.tag = 'Default'
+        if (row.tag !== '') {
+          row.tag = ''
         } else {
-          row.tag = 'Recommend'
+          row.tag = '推荐'
         }
       })
     },
@@ -447,26 +474,56 @@ export default {
       this.handleFilter()
     },
     handleCreate() {
-      // 直接跳转
       this.$router.push('/article/article-add')
     },
     handleUpdate(id) {
-      // 带参数跳转
-      // this.$router.push({ path: '/admin/admin-edit', query: { id: id } });
       this.$router.push({ name: 'ArticleEdit', params: { id: id }})
-      // this.$router.push("/admin/admin-edit/" + id);
     },
-    handleDelete(id, index) {
-      this.deleteId.id = id
+    handleDelete(row) {
+      this.deleteId.id = row.id
       deleteArticle(this.deleteId).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
+        if(row.isdel === 0) {
+          this.$notify({
+            title: '成功',
+            message: '软删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          row.isdel = 1
+        } else if(row.isdel === 1) {
+          this.$notify({
+            title: '成功',
+            message: '恢复成功',
+            type: 'success',
+            duration: 2000
+          })
+          row.isdel = 0
+        }
+      })
+    },
+    handleDeleteR(id, index) {
+      this.$confirm(
+        '将要彻底删除这篇文章，请三思而后行！',
+        'Warning',
+        {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning',
+        }
+      ).then(() => {
+        this.deleteId.id = id
+        deleteArticleR(this.deleteId).then(() => {
+          this.$notify({
+            title: '成功',
+            message: '彻底删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1) // 列表中删除此行
+          this.total -= 1
         })
-        this.list.splice(index, 1) // 列表中删除此行
-        this.total -= 1
+      }).catch(() => {
+        console.log('close')
       })
     },
     handleDownload() {
@@ -494,7 +551,7 @@ export default {
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
+      return sort === `+${key}` ? 'asc' : 'desc'
     }
   }
 }

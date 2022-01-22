@@ -8,17 +8,17 @@ export function uploadUserPortrait(data) {
   })
 }
 
-export function uploadLabelIcon(data) {
+export function uploadArticleCover(data) {
   return request({
-    url: '/adm/label/upload',
+    url: '/adm/article/upload',
     method: 'post',
     data
   })
 }
 
-export function uploadArticleCover(data) {
+export function uploadAdminAvatar(data) {
   return request({
-    url: '/adm/article/upload',
+    url: '/adm/admin/upload',
     method: 'post',
     data
   })

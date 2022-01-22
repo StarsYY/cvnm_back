@@ -2,6 +2,19 @@
   <div class="app-container">
     <el-form ref="form" :model="dataAdd" :rules="rules">
       <el-input v-model="dataAdd.id" type="hidden" />
+
+      <pan-thumb :image="image" style="margin-left: 40px" />
+      <el-button type="primary" icon="el-icon-upload" style="margin-left: 40px" @click="show = !show">
+        Change Avatar
+      </el-button>
+      <my-upload
+        field="img"
+        :width="110"
+        :height="110"
+        :model-value.sync="show"
+        img-format="png"
+        @crop-success="cropSuccess"
+      />
       <el-form-item style="margin-left: 40px;" prop="username">
         <MDinput v-model="dataAdd.username" :maxlength="100" name="name" required>
           Username
@@ -28,10 +41,13 @@
 <script>
 import { createAdmin, updateAdmin, fetchAdmin } from '@/api/admin'
 import MDinput from '@/components/MDinput'
+import PanThumb from '@/components/PanThumb'
+import { uploadAdminAvatar } from '@/api/upload'
+import MyUpload from 'vue-image-crop-upload'
 
 export default {
   name: 'AdminAdd',
-  components: { MDinput },
+  components: { MDinput, MyUpload, PanThumb },
 
   data() {
     const validateRequire = (rule, value, callback) => {
@@ -55,8 +71,14 @@ export default {
         id: '',
         username: '',
         password: '',
-        introduction: ''
-      }
+        introduction: '',
+        avatar: ''
+      },
+      image: '',
+      imgDataUrl: {
+        base64: '' // the datebase64 url of created image
+      },
+      show: false
     }
   },
   computed: {
@@ -74,40 +96,48 @@ export default {
       fetchAdmin(this.$route.params.id).then(response => {
         console.log(response.data)
         this.dataAdd = response.data
+        this.image = response.data.avatar
+      })
+    },
+    cropSuccess(base64, field) {
+      this.imgDataUrl.base64 = base64
+      uploadAdminAvatar(this.imgDataUrl).then(response => {
+        this.image = response.data.imagePath
+        this.dataAdd.avatar = response.data.imagePath
       })
     },
     Create() {
-      if (this.dataAdd.username.length === 0 || this.dataAdd.password.length === 0) {
-        this.$message({
-          message: '请填写必要的用户名和密码',
-          type: 'warning'
-        })
-        return
-      }
-      createAdmin(this.dataAdd).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '创建成功',
-          type: 'success',
-          duration: 2000
-        })
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          createAdmin(this.dataAdd).then(() => {
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
       })
     },
     Update() {
-      if (this.dataAdd.username.length === 0 || this.dataAdd.password.length === 0) {
-        this.$message({
-          message: '请填写必要的用户名和密码',
-          type: 'warning'
-        })
-        return
-      }
-      updateAdmin(this.dataAdd).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '修改成功',
-          type: 'success',
-          duration: 2000
-        })
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          updateAdmin(this.dataAdd).then(() => {
+            this.$notify({
+              title: '成功',
+              message: '修改成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
       })
     }
   }

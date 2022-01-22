@@ -60,14 +60,24 @@
                 <span>{{ row.id }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.label')" prop="label" min-width="100px">
+            <el-table-column :label="$t('table.label')" min-width="110px" prop="label">
               <template slot-scope="{row}">
-                <span class="link-type" @click="handleUpdate(row.id)">{{ row.label }}</span>
+                <span class="link-type" @click="handleUpdate(row)">{{ row.label }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.categoryMap')" min-width="100px">
+            <el-table-column :label="$t('table.describe')" min-width="210px" prop="describe">
+              <template slot-scope="{row}">
+                <span>{{ row.describe }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.categoryMap')" min-width="110px">
               <template slot-scope="{row}">
                 <el-tag v-for="(item, key) in row.categoryMap" :key="key">{{ item }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.articleCount')" width="100px" align="center">
+              <template slot-scope="{row}">
+                <span>{{ row.articleCount }}篇</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('table.createtime')" width="150px" align="center">
@@ -80,9 +90,9 @@
                 <span>{{ row.updatetime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
+            <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
-                <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
+                <el-button type="primary" size="mini" @click="handleUpdate(row)">
                   {{ $t('table.edit') }}
                 </el-button>
                 <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id,$index)">
@@ -97,6 +107,30 @@
           </el-table>
 
           <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+        
+          <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+            <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left:50px;">
+              <el-form-item :label="$t('table.label')" prop="label">
+                <el-input v-model="temp.label" maxlength="20" show-word-limit @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+              </el-form-item>
+              <el-form-item :label="$t('table.category')" class="set_select">
+                <el-select v-model="cids2" :placeholder="$t('table.categoryMap')" :popper-append-to-body="false" popper-class="select" multiple clearable @change="setCid">
+                  <el-option v-for="(item, key) in categoryOptions2" :key="key" :label="item" :value="key" />
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="$t('table.describe')">
+                <el-input v-model="temp.describe" :autosize="{ minRows: 4 }" clearable show-word-limit maxlength="200" type="textarea" placeholder="描述" />
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogFormVisible = false">
+                {{ $t('table.cancel') }}
+              </el-button>
+              <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+                {{ $t('table.confirm') }}
+              </el-button>
+            </div>
+          </el-dialog>
         </div>
       </el-col>
     </el-row>
@@ -104,15 +138,14 @@
 </template>
 
 <script>
-import SplitPane from 'vue-splitpane'
-import { fetchList, deleteLabel } from '@/api/label'
+import { fetchList, createLabel, updateLabel, deleteLabel } from '@/api/label'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
-  name: 'SplitpaneDemo',
-  components: { SplitPane, Pagination },
+  name: 'LabelList',
+  components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -143,17 +176,30 @@ export default {
         label: null,
         sort: 'asc'
       },
+      temp: {
+        id: '',
+        label: '',
+        categoryid: '',
+        describe: ''
+      },
+      dialogFormVisible: false,
+      dialogStatus: '',
       rid: null,
       cids: [],
       deleteId: {
         id: null
       },
+      cids2: [],
+      categoryOptions2: null,
       rootOptions: null,
       categoryOptions: null,
       sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
       textMap: {
         update: 'Edit',
         create: 'Create'
+      },
+      rules: {
+        label: [{ required: true, message: 'label is required', trigger: 'blur' }]
       },
       children: '',
       cateMap: null,
@@ -179,7 +225,7 @@ export default {
       return data.label.indexOf(value) !== -1
     },
     handleNodeClick(data) {
-      if (data.id != 0) {
+      if (data.id !== 0) {
         if (data.is === 'category') {
           this.listQuery.ids = data.id + ','
           this.listQuery.rootid = null
@@ -200,6 +246,7 @@ export default {
         this.list = response.data.items
         this.total = response.data.total
         this.categoryOptions = response.data.allCategory
+        this.categoryOptions2 = response.data.allCategory
         this.rootOptions = response.data.allRoot
 
         if (this.count === 1) {
@@ -249,15 +296,83 @@ export default {
         }
       }
     },
-    handleCreate() {
-      // 直接跳转
-      this.$router.push('/label/label-add')
+    resetTemp() {
+      this.temp = {
+        label: ''
+      }
+      this.cids2 = []
     },
-    handleUpdate(id) {
-      // 带参数跳转
-      // this.$router.push({path:'/admin/admin-edit',query:{id: id}});
-      this.$router.push({ name: 'LabelEdit', params: { id: id }})
-      // this.$router.push("/admin/admin-edit/" + id);
+    setCid() {
+      var idss = ','
+      for (const id in this.cids2) {
+        idss += this.cids2[id] + ','
+      }
+      this.temp.categoryid = idss
+    },
+    handleCreate() {
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    createData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          console.log(this.cids2)
+          if(this.cids2.length === 0) {
+            this.$message({
+              message: '标签类别不能为空',
+              type: 'warning'
+            })
+            return
+          }
+          createLabel(this.temp).then(response => {
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.list.splice(this.list.length, 0, response.data)
+          })
+        }
+      })
+    },
+    handleUpdate(row) {
+      this.temp = Object.assign({}, row) // copy obj
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.temp)
+          if(tempData.categoryid === ',') {
+            this.$message({
+              message: '标签类别不能为空',
+              type: 'warning'
+            })
+            return
+          }
+          updateLabel(tempData).then(response => {
+            const index = this.list.findIndex(v => v.id === this.temp.id)
+            this.list.splice(index, 1, response.data)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '更新成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
     },
     handleDelete(id, index) {
       this.deleteId.id = id
@@ -275,13 +390,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'categoryMap', 'createtime', 'updatetime', 'label', 'status']
-        const filterVal = ['id', 'categoryMap', 'createtime', 'updatetime', 'label', 'status']
+        const tHeader = ['id', 'label', 'describe', 'articleCount', 'createtime', 'updatetime']
+        const filterVal = ['id', 'label', 'describe', 'articleCount', 'createtime', 'updatetime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'AdminUser-list'
+          filename: 'List_list'
         })
         this.downloadLoading = false
       })
@@ -320,5 +435,9 @@ export default {
     padding-left: 10px;
     width: 100%;
     height: 100%;
+  }
+
+  .set_select >>> .el-form-item__content > .el-select--medium {
+    width: 100%;
   }
 </style>

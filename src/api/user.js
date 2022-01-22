@@ -47,3 +47,11 @@ export function deleteUser(data) {
     data
   })
 }
+
+export function deleteUserR(data) {
+  return request({
+    url: '/adm/user/deleteR',
+    method: 'post',
+    data
+  })
+}

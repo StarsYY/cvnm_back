@@ -85,7 +85,7 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      await this.$store.dispatch('user/resetToken') // logout     需要修改 （输入token能直接登录）
+      await this.$store.dispatch('user/logout') // logout
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }
