@@ -23,3 +23,19 @@ export function uploadAdminAvatar(data) {
     data
   })
 }
+
+export function uploadMedal(data) {
+  return request({
+    url: '/adm/medal/upload',
+    method: 'post',
+    data
+  })
+}
+
+export function uploadPlateIcon(data) {
+  return request({
+    url: '/adm/plate/upload',
+    method: 'post',
+    data
+  })
+}

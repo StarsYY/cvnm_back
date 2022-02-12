@@ -22,7 +22,7 @@
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
               <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                Title
+                标题
               </MDinput>
             </el-form-item>
 
@@ -33,25 +33,25 @@
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="7">
-                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
-                    <el-select v-model="author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user" @change="changeId">
+                <el-col :span="6">
+                  <el-form-item label-width="45px" label="作者:" class="postInfo-container-item">
+                    <el-select v-model="author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="搜索" @change="changeId">
                       <el-option v-for="(item, key) in userListOptions" :key="key" :label="item" :value="key" />
                     </el-select>
                   </el-form-item>
                 </el-col>
 
                 <el-col :span="9">
-                  <el-form-item label-width="120px" label="Label:" class="postInfo-container-item">
-                    <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="Select Label">
+                  <el-form-item label-width="120px" label="标签:" class="postInfo-container-item">
+                    <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择标签">
                       <el-option v-for="(item, key) in labelOptions" :key="key" :label="item" :value="key" />
                     </el-select>
                   </el-form-item>
                 </el-col>
 
                 <el-col :span="6">
-                  <el-form-item label-width="120px" label="Hot:" class="postInfo-container-item">
-                    <el-select v-model="postForm.hot" clearable style="width: 200px" class="filter-item" placeholder="Select Hot">
+                  <el-form-item label-width="120px" label="热度:" class="postInfo-container-item">
+                    <el-select v-model="postForm.hot" clearable style="width: 200px" class="filter-item" placeholder="请选择热度">
                       <el-option v-for="item in hotOptions" :key="item.key" :label="item.label" :value="item.key" />
                     </el-select>
                   </el-form-item>
@@ -62,8 +62,8 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
-          <el-input v-model="postForm.summary" maxlength="300" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
+        <el-form-item style="margin-bottom: 40px;" label-width="45px" label="简介:">
+          <el-input v-model="postForm.summary" maxlength="300" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入简介" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
@@ -71,15 +71,32 @@
           <Tinymce ref="editor" v-model="postForm.content" :height="400" />
         </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="50px" label="Cover:">
-          <pan-thumb :image="image" style="margin-left: 40px" />
-          <el-button type="primary" icon="el-icon-upload" style="margin-left: 40px" @click="toggleShow">
-            Change Portrait
-          </el-button>
+        <el-form-item style="margin-bottom: 40px;" label-width="50px" label="封面:">
+          <div class="my-upload">
+            <div v-if="showImage" class="my-cover" @click="toggleShow">
+              <div style="margin-bottom: 16px">
+                <svg-icon icon-class="coveimage" style="width: 50px; height: 44px" />
+              </div>
+              <div>请选择封面图</div>
+            </div>
+            <div v-if="!showImage" class="my-img-div" v-on:mouseover="showIcon = !showIcon" v-on:mouseout="showIcon = !showIcon">
+              <img :src="image" class="my-image" :class="{'my-image-hover' : showIcon}" >
+              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="toggleShow">
+                <svg-icon icon-class="edit16" class-name='my-edit16' />
+              </div>
+              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="showImage = ! showImage, postForm.cover = ''">
+                <svg-icon icon-class="delete16" class-name='my-edit16' style="left: 184px" />
+              </div>
+            </div>
+          </div>
           <my-upload
             field="img"
             :model-value.sync="show"
             img-format="png"
+            :width="256"
+            :height="144"
+            :noCircle="true"
+            :noSquare="true"
             @crop-success="cropSuccess"
           />
         </el-form-item>
@@ -94,7 +111,6 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MyUpload from 'vue-image-crop-upload'
-import PanThumb from '@/components/PanThumb'
 import { validURL } from '@/utils/validate'
 import { fetchArticle, createArticle, fetchLabel, updateArticle } from '@/api/article'
 import { searchUser } from '@/api/remote-search'
@@ -123,7 +139,7 @@ const defaultForm = {
 
 export default {
   name: 'ArticleAdd',
-  components: { Tinymce, MDinput, Upload, Sticky, MyUpload, PanThumb, CommentDropdown, ERDropdown, PlatformDropdown, SourceUrlDropdown },
+  components: { Tinymce, MDinput, Upload, Sticky, MyUpload, CommentDropdown, ERDropdown, PlatformDropdown, SourceUrlDropdown },
   data() {
     const validateRequire = (rule, value, callback) => {
       if (value === '') {
@@ -173,7 +189,9 @@ export default {
         checkStrictly: true
       },
       options: null,
-      show: false
+      show: false,
+      showImage: true,
+      showIcon: false
     }
   },
   computed: {
@@ -200,6 +218,10 @@ export default {
         this.ids = response.data.labelid.split(',')
         this.author = response.data.author
 
+        if(this.image !== '' && this.image !== null) {
+          this.showImage = false
+        }
+
         // set tagsview title
         this.setTagsViewTitle()
 
@@ -223,7 +245,7 @@ export default {
       uploadArticleCover(this.imgDataUrl).then(response => {
         this.image = response.data.imagePath
         this.postForm.cover = response.data.imagePath
-        console.log(response.data)
+        this.showImage = false
       })
     },
     setTagsViewTitle() {
@@ -242,12 +264,10 @@ export default {
       this.postForm.userid = this.author
     },
     submitForm() {
-      console.log(this.postForm)
       var idss = ','
       for (const id in this.ids) {
         idss += this.ids[id] + ','
       }
-      console.log(idss)
       this.postForm.labelid = idss
       if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.plateid === '' || this.postForm.labelid === ',') {
         this.$message({
@@ -339,7 +359,7 @@ export default {
       } else {
         this.$refs.postForm.validate(valid => {
           if (valid) {
-            createArticle(this.postForm).then(response => {
+            createArticle(this.postForm).then(() => {
               this.$message({
                 message: '保存成功',
                 type: 'success',
@@ -401,5 +421,58 @@ export default {
     border-radius: 0px;
     border-bottom: 1px solid #bfcbd9;
   }
+}
+
+.my-upload {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  font-size: 14px;
+  font-variant: tabular-nums;
+  line-height: 1.5;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  outline: 0;
+}
+
+.my-img-div {
+  width: 328px;
+  height: 184px;
+  position: relative;
+}
+
+.my-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+  border: 1px dashed #d6d6d6;
+  border-radius: 4px;
+  width: 328px;
+  height: 184px;
+}
+
+.my-image {
+  width: 100%;
+  height: 100%;
+}
+
+.my-image-hover {
+  filter: brightness(.5);
+}
+
+.my-edit16 {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  left: 112px;
+  top: 78px;
+  filter: invert(100%) sepia(5%) saturate(530%) hue-rotate(193deg) brightness(114%) contrast(100%);
+}
+
+.my-hidden {
+  display: none;
 }
 </style>

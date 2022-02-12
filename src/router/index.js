@@ -228,6 +228,108 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/verify',
+    component: Layout,
+    redirect: '/verify/verify-list',
+    name: 'Verify',
+    meta: { title: 'verify', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'verify-list',
+        component: () => import('@/views/verify/verify-list'),
+        name: 'VerifyList',
+        meta: { title: 'verify', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/comment',
+    component: Layout,
+    redirect: '/comment/comment-list',
+    name: 'Comment',
+    meta: { title: 'comment', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'comment-list',
+        component: () => import('@/views/comment/comment-list'),
+        name: 'CommentList',
+        meta: { title: 'commentlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/integral',
+    component: Layout,
+    redirect: '/integral/integral-list',
+    name: 'Integral',
+    meta: { title: 'integral', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'integral-list',
+        component: () => import('@/views/integral/integral-list'),
+        name: 'IntegralList',
+        meta: { title: 'integrallist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/medal',
+    component: Layout,
+    redirect: '/medal/medal-list',
+    name: 'Medal',
+    meta: { title: 'medal', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'medal-list',
+        component: () => import('@/views/medal/medal-list'),
+        name: 'MedalList',
+        meta: { title: 'medallist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/message',
+    component: Layout,
+    redirect: '/message/message-list',
+    name: 'Message',
+    meta: { title: 'message', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'message-list',
+        component: () => import('@/views/message/message-list'),
+        name: 'MessageList',
+        meta: { title: 'messagelist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/system',
+    component: Layout,
+    redirect: '/system/home-rotation',
+    name: 'System',
+    meta: { title: 'system', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'home-rotation',
+        component: () => import('@/views/system/home-rotation'),
+        name: 'HomeRotation',
+        meta: { title: 'homerotation', icon: 'tree' }
+      },
+      {
+        path: 'top-avigation',
+        component: () => import('@/views/system/top-avigation'),
+        name: 'TopAvigation',
+        meta: { title: 'topavigation', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/permission',
     component: Layout,
     redirect: '/permission/page',

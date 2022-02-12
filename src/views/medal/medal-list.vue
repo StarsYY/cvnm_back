@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.plate" :placeholder="$t('table.plate')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.title" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.introduction" :placeholder="$t('table.describe')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -30,29 +31,19 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.plate')" min-width="100px">
+      <el-table-column :label="$t('table.name')" min-width="100px" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.plate }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.icon')" width="100px" align="center">
+      <el-table-column :label="$t('table.medal')" width="100px" align="center">
         <template slot-scope="{row}">
-          <el-image v-if="row.icon !== '' && row.icon !== null" :src="row.icon" style="width: 30px; height: 30px"></el-image>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.ancestor')" min-width="100px">
-        <template slot-scope="{row}">
-          <span>{{ row.superior }}</span>
+          <el-image v-if="row.medal != '' && row.medal !== null" :src="row.medal" style="width: 40px; height: 40px"></el-image>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.describe')" min-width="200px">
         <template slot-scope="{row}">
           <span>{{ row.describe }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.articleCount')" width="80px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.articleCount }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.createtime')" width="150px" align="center">
@@ -85,7 +76,7 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
-        <el-form-item :label="$t('table.icon')">
+        <el-form-item :label="$t('table.medal')">
           <div class="my-upload">
             <div v-if="showImage" class="my-cover" @click="toggleShow">
               <div style="margin-bottom: 16px">
@@ -98,7 +89,7 @@
               <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="toggleShow">
                 <svg-icon icon-class="edit16" class-name='my-edit16' />
               </div>
-              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="showImage = ! showImage, temp.icon = ''">
+              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="showImage = ! showImage, temp.medal = ''">
                 <svg-icon icon-class="delete16" class-name='my-edit16' style="left: 75px" />
               </div>
             </div>
@@ -114,14 +105,11 @@
             @crop-success="cropSuccess"
           />
         </el-form-item>
-        <el-form-item :label="$t('table.plate')" prop="plate">
-          <el-input v-model="temp.plate" show-word-limit maxlength="10" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+        <el-form-item :label="$t('table.name')" prop="name">
+          <el-input v-model="temp.name" show-word-limit maxlength="10" placeholder="名称" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
-        <el-form-item :label="$t('table.ancestor')">
-          <el-cascader ref="plateCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 100%" @change="setAncestor" />
-        </el-form-item>
-        <el-form-item :label="$t('table.describe')">
-          <el-input v-model="temp.describe" :autosize="{ minRows: 2 }" clearable show-word-limit maxlength="200" type="textarea" placeholder="描述" />
+        <el-form-item :label="$t('table.describe')" prop="describe">
+          <el-input v-model="temp.describe" :autosize="{ minRows: 2 }" clearable show-word-limit maxlength="50" type="textarea" placeholder="描述" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -138,14 +126,14 @@
 
 <script>
 import MyUpload from 'vue-image-crop-upload'
-import { fetchList, createPlate, updatePlate, deletePlate } from '@/api/plate'
-import { uploadPlateIcon } from '@/api/upload'
+import { fetchList, createMedal, updateMedal, deleteMedal } from '@/api/medal'
+import { uploadMedal } from '@/api/upload'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
-  name: 'ComplexTable',
+  name: 'MedalList',
   components: { MyUpload, Pagination },
   directives: { waves },
   filters: {
@@ -165,7 +153,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        plate: null,
+        title: null,
+        introduction: null,
         sort: 'asc'
       },
       deleteId: {
@@ -174,10 +163,9 @@ export default {
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       temp: {
         id: 0,
-        plate: '',
-        ancestor: '0',
-        describe: '',
-        icon: ''
+        name: '',
+        medal: '',
+        describe: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -186,12 +174,9 @@ export default {
         create: 'Create'
       },
       rules: {
-        plate: [{ required: true, message: 'plate is required', trigger: 'blur' }]
+        name: [{ required: true, message: 'name is required', trigger: 'blur' }],
+        describe: [{ required: true, message: 'describe is required', trigger: 'blur' }]
       },
-      props: {
-        checkStrictly: true
-      },
-      options: null,
       downloadLoading: false,
       image: '',
       imgDataUrl: {
@@ -209,10 +194,9 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.image = response.data.icon
+        this.image = response.data.medal
         this.list = response.data.items
         this.total = response.data.total
-        this.options = response.data.optionPlate
 
         if(this.image !== '' && this.image !== null) {
           this.showImage = true
@@ -229,9 +213,9 @@ export default {
     },
     cropSuccess(base64, field) {
       this.imgDataUrl.base64 = base64
-      uploadPlateIcon(this.imgDataUrl).then(response => {
+      uploadMedal(this.imgDataUrl).then(response => {
         this.image = response.data.imagePath
-        this.temp.icon = response.data.imagePath
+        this.temp.medal = response.data.imagePath
         this.showImage = false
         this.showIcon = false
       })
@@ -246,12 +230,6 @@ export default {
         this.sortByID(order)
       }
     },
-    setAncestor() {
-      this.temp.ancestor = this.temp.ancestor[this.temp.ancestor.length - 1]
-      if (this.temp.ancestor === undefined) {
-        this.temp.ancestor = 0
-      }
-    },
     sortByID(order) {
       if (order === 'ascending') {
         this.listQuery.sort = 'asc'
@@ -262,7 +240,9 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        plate: ''
+        name: '',
+        medal: '',
+        describe: ''
       }
       this.image = ''
       this.showImage = true
@@ -278,10 +258,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          if (this.temp.ancestor === undefined) {
-            this.temp.ancestor = 0
-          }
-          createPlate(this.temp).then(response => {
+          createMedal(this.temp).then(response => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -296,7 +273,7 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.image = this.temp.icon
+      this.image = this.temp.medal
       if(this.image !== '' && this.image !== null) {
         this.showImage = false
       } else {
@@ -313,15 +290,9 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          if(tempData.id === tempData.ancestor) {
-            this.$message({
-              message: '不能继承自己呦',
-              type: 'warning'
-            })
-            return
-          }
-          updatePlate(tempData).then(() => {
-            this.getList()
+          updateMedal(tempData).then(() => {
+            const index = this.list.findIndex(v => v.id === this.temp.id)
+            this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -335,7 +306,7 @@ export default {
     },
     handleDelete(id, index) {
       this.deleteId.id = id
-      deletePlate(this.deleteId).then(() => {
+      deleteMedal(this.deleteId).then(() => {
         this.$notify({
           title: '成功',
           message: '删除成功',
@@ -349,13 +320,13 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
-        const filterVal = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
+        const tHeader = ['id', 'name', 'medal', 'describe', 'createtime', 'updatetime']
+        const filterVal = ['id', 'name', 'medal', 'describe', 'createtime', 'updatetime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'Plate_List'
+          filename: 'Medal_List'
         })
         this.downloadLoading = false
       })

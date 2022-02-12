@@ -34,6 +34,7 @@
         <div class="right-container">
           <div class="filter-container">
             <el-input v-model="listQuery.title" :placeholder="$t('table.title')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
+            <el-input v-model="listQuery.nickname" :placeholder="$t('table.author')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
             <el-select v-model="cgids" value-key="category" :placeholder="$t('table.categoryMap')" filterable multiple clearable class="filter-item" style="width: 275px" @change="selectCategory">
               <template v-for="item in categoryOptions">
                 <el-option v-if="cchildren.length === 0" :key="item.id" :label="item.category" :value="item" />
@@ -196,7 +197,6 @@ import { fetchList, changeStatus, changeTag, changeRTag, deleteArticle, deleteAr
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { ElMessageBox } from 'element-ui'
 
 const statusOptions = [
   { key: '已发布', display_name: '已发布' },
@@ -251,6 +251,7 @@ export default {
         ids: null,
         plateid: null,
         title: null,
+        nickname: null,
         sort: 'asc',
         type: null,
         publish: null,
