@@ -16,6 +16,14 @@ export function uploadArticleCover(data) {
   })
 }
 
+export function uploadCourseCover(data) {
+  return request({
+    url: '/adm/course/upload',
+    method: 'post',
+    data
+  })
+}
+
 export function uploadAdminAvatar(data) {
   return request({
     url: '/adm/admin/upload',

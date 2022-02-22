@@ -5,16 +5,16 @@
         <div class="left-container">
           <el-scrollbar height="600px">
             <div class="app-container-left">
-              <el-input v-model="filterText" :placeholder="$t('table.labelMap')" style="margin-bottom:30px;" />
+              <el-input v-model="filterText" :placeholder="$t('table.search')" style="margin-bottom:30px;" />
               <el-tree
-                ref="plateTree"
-                :data="plateTree"
+                ref="modularTree"
+                :data="modularTree"
                 :props="defaultProps"
                 :filter-node-method="filterNode"
                 :expand-on-click-node="false"
                 class="filter-tree"
                 default-expand-all
-                @node-click="handleNodeClickPlate"
+                @node-click="handleNodeClickModular"
               />
               <el-tree
                 ref="tree"
@@ -33,7 +33,7 @@
       <el-col :xs="19" :sm="19" :md="19" :lg="19" :xl="19">
         <div class="right-container">
           <div class="filter-container">
-            <el-input v-model="listQuery.title" :placeholder="$t('table.title')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
+            <el-input v-model="listQuery.name" :placeholder="$t('table.name')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
             <el-input v-model="listQuery.nickname" :placeholder="$t('table.author')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
             <el-select v-model="cgids" value-key="category" :placeholder="$t('table.categoryMap')" filterable multiple clearable class="filter-item" style="width: 275px" @change="selectCategory">
               <template v-for="item in categoryOptions">
@@ -41,7 +41,7 @@
                 <el-option v-else-if="cchildren.indexOf(item.id) != -1" :key="item.id" :label="item.category" :value="item" />
               </template>
             </el-select>
-            <el-select v-model="lids" :placeholder="$t('table.labelMap')" filterable multiple clearable class="filter-item" style="width: 275px">
+            <el-select v-model="lids" :placeholder="$t('table.keyword')" filterable multiple clearable class="filter-item" style="width: 275px">
               <template v-for="(item, key) in labelOptions">
                 <el-option v-if="children.length === 0" :key="key" :label="item" :value="key" />
                 <el-option v-else-if="children.indexOf(key) != -1" :key="key" :label="item" :value="key" />
@@ -50,23 +50,11 @@
             <el-select v-model="rid" :placeholder="$t('table.root')" clearable class="filter-item" style="width: 210px" @change="selectRoot">
               <el-option v-for="item in rootOptions" :key="item.id" :label="item.root" :value="item.id" />
             </el-select>
-            <el-select v-model="plateid" :placeholder="$t('table.plate')" clearable class="filter-item" style="width: 210px" @change="setPlate">
-              <el-option v-for="(item, key) in plateOptions" :key="key" :label="item" :value="key" />
-            </el-select>
-            <el-select v-model="listQuery.type" :placeholder="$t('table.type')" clearable class="filter-item" style="width: 210px">
-              <el-option v-for="item in typeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-            </el-select>
-            <el-select v-model="listQuery.publish" :placeholder="$t('table.publish')" clearable class="filter-item" style="width: 210px">
-              <el-option v-for="item in publishOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+            <el-select v-model="modularid" :placeholder="$t('table.modular')" clearable class="filter-item" style="width: 210px" @change="setModular">
+              <el-option v-for="(item, key) in modularOptions" :key="key" :label="item" :value="key" />
             </el-select>
             <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable class="filter-item" style="width: 210px">
               <el-option v-for="item in statusOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-            </el-select>
-            <el-select v-model="listQuery.tag" :placeholder="$t('table.tag')" clearable class="filter-item" style="width: 210px">
-              <el-option v-for="item in tagOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-            </el-select>
-            <el-select v-model="listQuery.hot" :placeholder="$t('table.hot')" clearable class="filter-item" style="width: 210px">
-              <el-option v-for="item in hotOptions" :key="item.key" :label="item.display_name" :value="item.key" />
             </el-select>
             <el-select v-model="listQuery.sort" style="width: 170px" class="filter-item" @change="handleFilter">
               <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -105,9 +93,9 @@
                 <span>{{ row.id }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.title')" prop="title" min-width="110px">
+            <el-table-column :label="$t('table.name')" prop="name" min-width="110px">
               <template slot-scope="{row}">
-                <span class="link-type" @click="handleUpdate(row.id)">{{ row.title }}</span>
+                <span class="link-type" @click="handleUpdate(row.id)">{{ row.name }}</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('table.author')" prop="author" width="110px" align="center">
@@ -115,27 +103,30 @@
                 {{ row.author }}
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.ancestor')" prop="plate" width="110px" align="center">
+            <el-table-column :label="$t('table.modular')" prop="modular" width="110px" align="center">
               <template slot-scope="{row}">
-                {{ row.plate }}
+                {{ row.modular }}
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.labelMap')" min-width="100px">
+            <el-table-column :label="$t('table.keyword')" min-width="110px">
               <template slot-scope="{row}">
                 <el-tag v-for="(item, key) in row.labelMap" :key="key">{{ item }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.price')" prop="price" width="100px" align="center">
+              <template slot-scope="{row}">
+                <span style="color: #F6416C">￥ {{ row.price / 100 }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.score')" prop="score" width="50px" align="center">
+              <template slot-scope="{row}">
+                <span style="color: #ff9900">{{ row.score}}</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
               <template slot-scope="{row}">
                 <el-tag :type="row.status | statusFilter">
                   {{ row.status }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('table.tag')" class-name="status-col" width="100">
-              <template slot-scope="{row}">
-                <el-tag v-if="row.tag !== ''" :type="row.tag | statusFilter">
-                  {{ row.tag }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -149,7 +140,7 @@
                 <span style="color: #B2B9BF">{{ row.updatetime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
               </template>
             </el-table-column>
-            <el-table-column v-if="showActions" :label="$t('table.actions')" fixed="right" align="center" width="300" class-name="small-padding fixed-width">
+            <el-table-column v-if="showActions" :label="$t('table.actions')" fixed="right" align="center" width="220" class-name="small-padding fixed-width">
               <template slot-scope="{row,$index}">
                 <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
                   {{ $t('table.edit') }}
@@ -163,20 +154,10 @@
                 <el-button v-if="row.status!='草稿' && row.status!='待审核'" size="mini" @click="handleModifyStatus(row)">
                   {{ $t('table.audit') }}
                 </el-button>
-                <el-button v-if="row.tag!='精华' && row.tag!=''" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
-                  {{ $t('table.essence') }}
-                </el-button>
-                <el-button v-if="row.tag!='推荐' && row.tag!=''" size="mini" type="warning" @click="handleModifyTag(row)" @contextmenu.right.native.prevent="handleModifyTagR(row)">
-                  {{ $t('table.recommend') }}
-                </el-button>
-                <el-button v-if="row.tag!='精华' && row.tag!='推荐'" size="mini" @contextmenu.right.native.prevent="handleModifyTagR(row)">
-                  {{ $t('table.default') }}
-                </el-button>
-                <el-popconfirm title="此为软删除或恢复，删除后只在后台显示，彻底删除请点击右键" @onConfirm="handleDelete(row)">
+                <el-popconfirm title="是否彻底删除？" @onConfirm="handleDelete(row.id, $index)">
                   <template #reference>
-                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px" @contextmenu.right.native.prevent="handleDeleteR(row.id, $index)">
-                      <span v-if="row.isdel === 0">{{ $t('table.delete') }}</span>
-                      <span v-if="row.isdel === 1">{{ $t('table.restore') }}</span>
+                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
+                      {{ $t('table.delete') }}
                     </el-button>
                   </template>
                 </el-popconfirm>
@@ -192,8 +173,7 @@
 </template>
 
 <script>
-import SplitPane from 'vue-splitpane'
-import { fetchList, changeStatus, changeTag, changeRTag, deleteArticle, deleteArticleR } from '@/api/article'
+import { fetchList, changeStatus, deleteCourse } from '@/api/course'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -210,8 +190,8 @@ const statusKeyValue = statusOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'ArticleList',
-  components: { SplitPane, Pagination },
+  name: 'CourseList',
+  components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -219,8 +199,6 @@ export default {
         已发布: 'success',
         草稿: 'info',
         待审核: 'danger',
-        精华: 'warning',
-        推荐: 'warning',
         deleted: 'danger'
       }
       return statusMap[status]
@@ -232,7 +210,7 @@ export default {
   data() {
     return {
       filterText: '',
-      plateTree: [],
+      modularTree: [],
       treeData: [],
       defaultProps: {
         children: 'children',
@@ -249,20 +227,16 @@ export default {
         rootid: null,
         cids: null,
         ids: null,
-        plateid: null,
-        title: null,
+        modularid: null,
+        name: null,
         nickname: null,
         sort: 'asc',
-        type: null,
-        publish: null,
-        status: null,
-        tag: null,
-        hot: null
+        status: null
       },
       showCreatetime: false,
       showUpdatetime: false,
-      showActions: false,
-      plateid: null,
+      showActions: true,
+      modularid: null,
       rid: null,
       cgids: [],
       lids: [],
@@ -271,24 +245,11 @@ export default {
       deleteId: {
         id: null
       },
-      plateOptions: null,
+      modularOptions: null,
       rootOptions: null,
       categoryOptions: null,
       labelOptions: null,
       statusOptions,
-      tagOptions: [{ key: '精华', display_name: '精华' }, { key: '推荐', display_name: '推荐' }],
-      hotOptions: [{ key: 'Top', display_name: '顶置' }, { key: 'Hot', display_name: '热门' }],
-      typeOptions: [
-        { key: '原创', display_name: '原创' },
-        { key: '转载', display_name: '转载' },
-        { key: '翻译', display_name: '翻译' },
-        { key: '问题求助', display_name: '问题求助' },
-        { key: '行业动态', display_name: '行业动态' },
-        { key: '分享', display_name: '分享' },
-        { key: '解决方案', display_name: '解决方案' },
-        { key: '改进建议', display_name: '改进建议' }
-      ],
-      publishOptions: [{ key: '公开', display_name: '公开' }, { key: '私密', display_name: '私密' }],
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       textMap: {
         update: 'Edit',
@@ -302,7 +263,7 @@ export default {
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val)
-      this.$refs.plateTree.filter(val)
+      this.$refs.modularTree.filter(val)
     }
   },
   created() {
@@ -316,7 +277,7 @@ export default {
       if (!value) return true
       return data.label.indexOf(value) !== -1
     },
-    handleNodeClickPlate(data) {
+    handleNodeClickModular(data) {
       this.listQuery.rootid = null
       this.listQuery.cids = null
       this.listQuery.ids = null
@@ -324,14 +285,14 @@ export default {
       this.cgids = []
       this.lids = []
       if (data.value === 0) {
-        this.listQuery.plateid = null
+        this.listQuery.modularid = null
       } else {
-        this.listQuery.plateid = data.value
+        this.listQuery.modularid = data.value
       }
       this.getList()
     },
     handleNodeClick(data) {
-      this.listQuery.plateid = null
+      this.listQuery.modularid = null
       this.listQuery.rootid = null
       this.listQuery.cids = null
       this.rid = null
@@ -356,13 +317,13 @@ export default {
       fetchList(this.listQuery).then(response => {
         this.list = response.data.items
         this.total = response.data.total
-        this.plateOptions = response.data.allPlate
+        this.modularOptions = response.data.allModular
         this.rootOptions = response.data.allRoot
         this.categoryOptions = response.data.allCategory
         this.labelOptions = response.data.allLabel
 
         if (this.count === 1) { // 防止重复刷新列表树
-          this.plateTree = response.data.plateTree
+          this.modularTree = response.data.modularTree
           this.treeData = response.data.labelTree
           this.count += 1
         }
@@ -374,8 +335,8 @@ export default {
         }, 0.5 * 1000)
       })
     },
-    setPlate(val) {
-      this.listQuery.plateid = val
+    setModular(val) {
+      this.listQuery.modularid = val
     },
     selectRoot(val) {
       if (val === '') {
@@ -419,7 +380,7 @@ export default {
     handleModifyStatus(row) {
       if(row.status === '草稿') {
         this.$message({
-          message: '文章还没有提交，不能操作呦',
+          message: '课程还没有上线，不能操作呦',
           type: 'warning'
         })
         return
@@ -433,36 +394,6 @@ export default {
           row.status = '待审核'
         } else {
           row.status = '已发布'
-        }
-      })
-    },
-    handleModifyTag(row) {
-      changeTag(row).then(() => {
-        if (row.tag === '精华') {
-          this.$message({
-            message: '操作成功',
-            type: 'success'
-          })
-          row.tag = '推荐'
-        } else if (row.tag === '推荐') {
-          this.$message({
-            message: '操作成功',
-            type: 'success'
-          })
-          row.tag = '精华'
-        }
-      })
-    },
-    handleModifyTagR(row) {
-      changeRTag(row).then(() => {
-        this.$message({
-          message: '操作成功',
-          type: 'success'
-        })
-        if (row.tag !== '') {
-          row.tag = ''
-        } else {
-          row.tag = '推荐'
         }
       })
     },
@@ -481,68 +412,34 @@ export default {
       this.handleFilter()
     },
     handleCreate() {
-      this.$router.push('/article/article-add')
+      this.$router.push('/course/course-add')
     },
     handleUpdate(id) {
-      this.$router.push({ name: 'ArticleEdit', params: { id: id }})
+      this.$router.push({ name: 'CourseEdit', params: { id: id }})
     },
-    handleDelete(row) {
-      this.deleteId.id = row.id
-      deleteArticle(this.deleteId).then(() => {
-        if(row.isdel === 0) {
-          this.$notify({
-            title: '成功',
-            message: '软删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          row.isdel = 1
-        } else if(row.isdel === 1) {
-          this.$notify({
-            title: '成功',
-            message: '恢复成功',
-            type: 'success',
-            duration: 2000
-          })
-          row.isdel = 0
-        }
-      })
-    },
-    handleDeleteR(id, index) {
-      this.$confirm(
-        '将要彻底删除这篇文章，请三思而后行！',
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        }
-      ).then(() => {
-        this.deleteId.id = id
-        deleteArticleR(this.deleteId).then(() => {
-          this.$notify({
-            title: '成功',
-            message: '彻底删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.list.splice(index, 1) // 列表中删除此行
-          this.total -= 1
+    handleDelete(id, index) {
+      this.deleteId.id = id
+      deleteCourse(this.deleteId).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '彻底删除成功',
+          type: 'success',
+          duration: 2000
         })
-      }).catch(() => {
-        console.log('close')
+        this.list.splice(index, 1) // 列表中删除此行
+        this.total -= 1
       })
     },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'categoryMap', 'createtime', 'updatetime', 'title', 'status']
-        const filterVal = ['id', 'categoryMap', 'createtime', 'updatetime', 'title', 'status']
+        const tHeader = ['id', 'categoryMap', 'createtime', 'updatetime', 'name', 'status']
+        const filterVal = ['id', 'categoryMap', 'createtime', 'updatetime', 'name', 'status']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'AdminUser-list'
+          filename: 'Course-list'
         })
         this.downloadLoading = false
       })

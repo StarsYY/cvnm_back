@@ -168,6 +168,22 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/modular',
+    component: Layout,
+    redirect: '/modular/modular-list',
+    name: 'Modular',
+    meta: { title: 'modular', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'modular-list',
+        component: () => import('@/views/modular/modular-list'),
+        name: 'ModularList',
+        meta: { title: 'modularlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/article',
     component: Layout,
     redirect: '/article/article-list',
@@ -185,13 +201,41 @@ export const asyncRoutes = [
         component: () => import('@/views/article/article-add'),
         name: 'ArticleAdd',
         meta: { title: 'articleadd', icon: 'tree' },
-        hidden: true
       },
       {
         path: 'article-edit/:id',
         component: () => import('@/views/article/article-add'),
         name: 'ArticleEdit',
         meta: { title: 'articleedit' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
+    path: '/course',
+    component: Layout,
+    redirect: '/course/course-list',
+    name: 'Course',
+    meta: { title: 'course', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'course-list',
+        component: () => import('@/views/course/course-list'),
+        name: 'CourseList',
+        meta: { title: 'courselist', icon: 'tree' }
+      },
+      {
+        path: 'course-add',
+        component: () => import('@/views/course/course-add'),
+        name: 'CourseAdd',
+        meta: { title: 'courseadd', icon: 'tree' },
+      },
+      {
+        path: 'course-edit/:id',
+        component: () => import('@/views/course/course-add'),
+        name: 'CourseEdit',
+        meta: { title: 'courseedit' },
         hidden: true
       }
     ]
