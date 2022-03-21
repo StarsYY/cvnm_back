@@ -242,6 +242,22 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/order',
+    component: Layout,
+    redirect: '/order/order-list',
+    name: 'Order',
+    meta: { title: 'order', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'order-list',
+        component: () => import('@/views/order/order-list'),
+        name: 'OrderList',
+        meta: { title: 'orderlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/user',
     component: Layout,
     redirect: '/user/user-list',
@@ -299,6 +315,22 @@ export const asyncRoutes = [
         component: () => import('@/views/comment/comment-list'),
         name: 'CommentList',
         meta: { title: 'commentlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/discuss',
+    component: Layout,
+    redirect: '/discuss/discuss-list',
+    name: 'Discuss',
+    meta: { title: 'discuss', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'discuss-list',
+        component: () => import('@/views/discuss/discuss-list'),
+        name: 'DiscussList',
+        meta: { title: 'discusslist', icon: 'tree' }
       }
     ]
   },
