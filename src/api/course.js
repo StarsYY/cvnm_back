@@ -55,3 +55,11 @@ export function deleteCourse(data) {
     data
   })
 }
+
+export function deleteCourseR(data) {
+  return request({
+    url: '/adm/course/deleteR',
+    method: 'post',
+    data
+  })
+}

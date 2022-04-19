@@ -115,7 +115,7 @@ export default {
       deleteId: {
         id: null
       },
-      sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
+      sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       temp: {
         id: '',
         root: ''

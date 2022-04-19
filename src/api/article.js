@@ -64,6 +64,22 @@ export function changeRTag(data) {
   })
 }
 
+export function changeHot(data) {
+  return request({
+    url: '/adm/article/changeHot',
+    method: 'post',
+    data
+  })
+}
+
+export function changeRHot(data) {
+  return request({
+    url: '/adm/article/changeRHot',
+    method: 'post',
+    data
+  })
+}
+
 export function deleteArticle(data) {
   return request({
     url: '/adm/article/delete',
@@ -75,6 +91,14 @@ export function deleteArticle(data) {
 export function deleteArticleR(data) {
   return request({
     url: '/adm/article/deleteR',
+    method: 'post',
+    data
+  })
+}
+
+export function sendMessageToUser(data) {
+  return request({
+    url: '/adm/article/sendMessage',
     method: 'post',
     data
   })

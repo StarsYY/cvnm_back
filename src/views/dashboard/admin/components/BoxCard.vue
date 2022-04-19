@@ -5,22 +5,22 @@
     </div>
     <div style="position:relative;">
       <pan-thumb :image="avatar" class="panThumb" />
-      <mallki class-name="mallki-text" text="vue-element-admin" />
+      <mallki class-name="mallki-text" :text="name" />
       <div style="padding-top:35px;" class="progress-item">
-        <span>Vue</span>
-        <el-progress :percentage="70" />
+        <svg-icon icon-class="bilibili" style="font-size: 20px"></svg-icon>
+        <el-link href="https://space.bilibili.com/383029658?spm_id_from=333.1007.0.0" target="_blank" class="my-link">小羊羊在鲜花舍</el-link>
       </div>
-      <div class="progress-item">
-        <span>JavaScript</span>
-        <el-progress :percentage="18" />
+      <div class="progress-item border-top">
+        <svg-icon icon-class="github" style="font-size: 20px"></svg-icon>
+        <el-link href="https://github.com/StarsYY" target="_blank" class="my-link">StarsYY</el-link>
       </div>
-      <div class="progress-item">
-        <span>CSS</span>
-        <el-progress :percentage="12" />
+      <div class="progress-item border-top">
+        <svg-icon icon-class="qq2" style="font-size: 20px"></svg-icon>
+        <el-link target="_blank" class="my-link">1272003586</el-link>
       </div>
-      <div class="progress-item">
-        <span>ESLint</span>
-        <el-progress :percentage="100" status="success" />
+      <div class="progress-item border-top">
+        <svg-icon icon-class="wechat2" style="font-size: 20px"></svg-icon>
+        <el-link target="_blank" class="my-link">LimeMrLee</el-link>
       </div>
     </div>
   </el-card>
@@ -89,6 +89,7 @@ export default {
     right: 0px;
     font-size: 20px;
     font-weight: bold;
+    text-align: center;
   }
   .panThumb {
     z-index: 100;
@@ -106,6 +107,8 @@ export default {
     }
   }
   .progress-item {
+    display: flex;
+    align-items: center;
     margin-bottom: 10px;
     font-size: 14px;
   }
@@ -114,5 +117,13 @@ export default {
       display: none;
     }
   }
+}
+
+.my-link {
+  margin-left: 20px;
+}
+
+.border-top {
+  padding-top: 10px;
 }
 </style>

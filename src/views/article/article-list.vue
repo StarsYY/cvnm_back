@@ -89,6 +89,9 @@
             <el-checkbox v-model="showActions" class="filter-item" @change="tableKey=tableKey+1">
               {{ $t('table.actions') }}
             </el-checkbox>
+            <el-checkbox v-model="showSend" class="filter-item" @change="tableKey=tableKey+1">
+              {{ $t('table.sendMessage') }}
+            </el-checkbox>
           </div>
 
           <el-table
@@ -139,6 +142,13 @@
                 </el-tag>
               </template>
             </el-table-column>
+            <el-table-column :label="$t('table.hot')" class-name="status-col" width="100">
+              <template slot-scope="{row}">
+                <el-tag v-if="row.hot !== ''" :type="row.hot | statusFilter">
+                  {{ row.hot }}
+                </el-tag>
+              </template>
+            </el-table-column>
             <el-table-column v-if="showCreatetime" :label="$t('table.createtime')" width="150px" align="center">
               <template slot-scope="{row}">
                 <span style="color: #B2B9BF">{{ row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
@@ -149,8 +159,8 @@
                 <span style="color: #B2B9BF">{{ row.updatetime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
               </template>
             </el-table-column>
-            <el-table-column v-if="showActions" :label="$t('table.actions')" fixed="right" align="center" width="300" class-name="small-padding fixed-width">
-              <template slot-scope="{row,$index}">
+            <el-table-column v-if="showActions" :label="$t('table.actions')" fixed="right" align="center" width="400" class-name="small-padding fixed-width">
+              <template slot-scope="{row}">
                 <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
                   {{ $t('table.edit') }}
                 </el-button>
@@ -172,14 +182,30 @@
                 <el-button v-if="row.tag!='精华' && row.tag!='推荐'" size="mini" @contextmenu.right.native.prevent="handleModifyTagR(row)">
                   {{ $t('table.default') }}
                 </el-button>
-                <el-popconfirm title="此为软删除或恢复，删除后只在后台显示，彻底删除请点击右键" @onConfirm="handleDelete(row)">
+                <el-button v-if="row.hot!='Top' && row.hot!=''" size="mini" type="warning" @click="handleModifyHot(row)" @contextmenu.right.native.prevent="handleModifyHotR(row)">
+                  {{ $t('table.hot') }}
+                </el-button>
+                <el-button v-if="row.hot!='Hot' && row.hot!=''" size="mini" type="warning" @click="handleModifyHot(row)" @contextmenu.right.native.prevent="handleModifyHotR(row)">
+                  {{ $t('table.top') }}
+                </el-button>
+                <el-button v-if="row.hot!='Top' && row.hot!='Hot'" size="mini" @contextmenu.right.native.prevent="handleModifyHotR(row)">
+                  {{ $t('table.default') }}
+                </el-button>
+                <el-popconfirm title="是否删除？" @onConfirm="handleDelete(row)">
                   <template #reference>
-                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px" @contextmenu.right.native.prevent="handleDeleteR(row.id, $index)">
+                    <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
                       <span v-if="row.isdel === 0">{{ $t('table.delete') }}</span>
                       <span v-if="row.isdel === 1">{{ $t('table.restore') }}</span>
                     </el-button>
                   </template>
                 </el-popconfirm>
+              </template>
+            </el-table-column>
+            <el-table-column v-if="showSend" :label="$t('table.sendMessage')" fixed="right" align="center" width="120" class-name="small-padding fixed-width">
+              <template slot-scope="{row}">
+                <el-button type="danger" size="mini" plain @click="sendMsg(row)">
+                  {{ $t('table.sendMessage') }}
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -188,12 +214,33 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-dialog title="发送消息" :visible.sync="dialogFormVisible">
+      <el-form :model="form">
+        <el-form-item label="内容" label-width="20%">
+          <el-input
+            type="textarea"
+            :rows="3"
+            placeholder="请输入内容"
+            v-model="form.content"
+            clearable
+            maxlength="250"
+            show-word-limit
+          >
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitMessage">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import SplitPane from 'vue-splitpane'
-import { fetchList, changeStatus, changeTag, changeRTag, deleteArticle, deleteArticleR } from '@/api/article'
+import { fetchList, changeStatus, changeTag, changeRTag, changeHot, changeRHot, deleteArticle, sendMessageToUser } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -221,6 +268,8 @@ export default {
         待审核: 'danger',
         精华: 'warning',
         推荐: 'warning',
+        Top: 'warning',
+        Hot: 'warning',
         deleted: 'danger'
       }
       return statusMap[status]
@@ -262,6 +311,7 @@ export default {
       showCreatetime: false,
       showUpdatetime: false,
       showActions: false,
+      showSend: false,
       plateid: null,
       rid: null,
       cgids: [],
@@ -296,7 +346,12 @@ export default {
       },
       cateMap: null,
       downloadLoading: false,
-      count: 1
+      count: 1,
+      dialogFormVisible: false,
+      form: {
+        receiveuid: '',
+        content: ''
+      }
     }
   },
   watch: {
@@ -466,6 +521,49 @@ export default {
         }
       })
     },
+    handleModifyHot(row) {
+      changeHot(row).then(() => {
+        if (row.hot === 'Top') {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
+          row.hot = 'Hot'
+        } else if (row.hot === 'Hot') {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
+          row.hot = 'Top'
+        }
+      })
+    },
+    handleModifyHotR(row) {
+      changeRHot(row).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        if (row.hot !== '') {
+          row.hot = ''
+        } else {
+          row.hot = 'Hot'
+        }
+      })
+    },
+    sendMsg(row) {
+      this.dialogFormVisible = true
+      this.form.receiveuid = row.userid
+    },
+    submitMessage() {
+      sendMessageToUser(this.form).then(() => {
+        this.$message({
+          message: '发送成功',
+          type: 'success'
+        })
+        this.dialogFormVisible = false
+      })
+    },
     sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -508,31 +606,31 @@ export default {
         }
       })
     },
-    handleDeleteR(id, index) {
-      this.$confirm(
-        '将要彻底删除这篇文章，请三思而后行！',
-        'Warning',
-        {
-          confirmButtonText: 'OK',
-          cancelButtonText: 'Cancel',
-          type: 'warning',
-        }
-      ).then(() => {
-        this.deleteId.id = id
-        deleteArticleR(this.deleteId).then(() => {
-          this.$notify({
-            title: '成功',
-            message: '彻底删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.list.splice(index, 1) // 列表中删除此行
-          this.total -= 1
-        })
-      }).catch(() => {
-        console.log('close')
-      })
-    },
+    // handleDeleteR(id, index) { @contextmenu.right.native.prevent="handleDeleteR(row.id, $index)",$index
+    //   this.$confirm(
+    //     '将要彻底删除这篇文章，请三思而后行！',
+    //     'Warning',
+    //     {
+    //       confirmButtonText: 'OK',
+    //       cancelButtonText: 'Cancel',
+    //       type: 'warning',
+    //     }
+    //   ).then(() => {
+    //     this.deleteId.id = id
+    //     deleteArticleR(this.deleteId).then(() => {
+    //       this.$notify({
+    //         title: '成功',
+    //         message: '彻底删除成功',
+    //         type: 'success',
+    //         duration: 2000
+    //       })
+    //       this.list.splice(index, 1) // 列表中删除此行
+    //       this.total -= 1
+    //     })
+    //   }).catch(() => {
+    //     console.log('close')
+    //   })
+    // },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {

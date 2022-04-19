@@ -61,7 +61,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
           </el-button>
-          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id,$index)">
+          <el-popconfirm title="是否要删除该勋章?" @onConfirm="handleDelete(row.id,$index)">
             <template #reference>
               <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
                 {{ $t('table.delete') }}
@@ -76,7 +76,10 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
-        <el-form-item :label="$t('table.medal')">
+        <el-form-item :label="$t('table.medal')" prop="medal">
+          <div style="display: none">
+            <el-input v-model="temp.medal" />
+          </div>
           <div class="my-upload">
             <div v-if="showImage" class="my-cover" @click="toggleShow">
               <div style="margin-bottom: 16px">
@@ -175,7 +178,8 @@ export default {
       },
       rules: {
         name: [{ required: true, message: 'name is required', trigger: 'blur' }],
-        describe: [{ required: true, message: 'describe is required', trigger: 'blur' }]
+        describe: [{ required: true, message: 'describe is required', trigger: 'blur' }],
+        medal: [{ required: true, message: 'medal is required', trigger: 'change' }]
       },
       downloadLoading: false,
       image: '',

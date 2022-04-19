@@ -62,13 +62,23 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="45px" label="简介:">
+        <el-form-item style="margin-bottom: 40px" label-width="45px" label="简介:">
           <el-input v-model="postForm.summary" maxlength="300" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入简介" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
-        <el-form-item prop="content" style="margin-bottom: 30px;">
+        <el-form-item prop="content" style="margin-bottom: 30px">
           <Tinymce ref="editor" v-model="postForm.content" :height="400" />
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 30px" label-width="120px" label="是否开启评论区:">
+          <el-switch
+            v-model="isopen"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            @change="setIsOpen"
+          />
         </el-form-item>
 
         <el-form-item style="margin-bottom: 40px;" label-width="50px" label="封面:">
@@ -134,7 +144,8 @@ const defaultForm = {
   down: 0,
   watch: 0,
   hot: '',
-  source: '' // 文章外链
+  source: '', // 文章外链
+  isopen: 1
 }
 
 export default {
@@ -188,6 +199,7 @@ export default {
       props: {
         checkStrictly: true
       },
+      isopen: true,
       options: null,
       show: false,
       showImage: true,
@@ -220,6 +232,10 @@ export default {
 
         if(this.image !== '' && this.image !== null) {
           this.showImage = false
+        }
+
+        if(response.data.isopen === 0) {
+          this.isopen = false
         }
 
         // set tagsview title
@@ -259,6 +275,13 @@ export default {
     },
     setAncestor() {
       this.postForm.plateid = this.postForm.plateid[this.postForm.plateid.length - 1]
+    },
+    setIsOpen() {
+      if(this.isopen) {
+        this.postForm.isopen = 1
+      } else {
+        this.postForm.isopen = 0
+      }
     },
     changeId() {
       this.postForm.userid = this.author

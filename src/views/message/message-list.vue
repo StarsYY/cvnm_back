@@ -47,7 +47,17 @@
           <span>{{ row.receivename }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.type')" class-name="status-col" width="110">
+      <el-table-column :label="$t('table.datasource')" prop="receivename" width="110px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.datasource }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.addition')" prop="receivename" width="110px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.addition }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.type')" class-name="status-col" width="110px">
         <template slot-scope="{row}">
           <el-tag :type="row.type | statusFilter">
             <span v-if="row.type == 1">管理员消息</span>
@@ -55,7 +65,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="110px" class-name="small-padding fixed-width">
         <template slot-scope="{row, $index}">
           <el-popconfirm title="是否删除？" @onConfirm="handleDelete(row.id, $index)">
             <template #reference>

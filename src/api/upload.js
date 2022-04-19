@@ -47,3 +47,27 @@ export function uploadPlateIcon(data) {
     data
   })
 }
+
+export function uploadCourseVideo(data) {
+  return request({
+    url: '/adm/course/upload/video/merge',
+    method: 'post',
+    data
+  })
+}
+
+export function uploadRotation(data) {
+  return request({
+    url: '/adm/rotation/upload',
+    method: 'post',
+    data
+  })
+}
+
+export function uploadRotations(data) {
+  return request({
+    url: '/adm/rotations/upload',
+    method: 'post',
+    data
+  })
+}

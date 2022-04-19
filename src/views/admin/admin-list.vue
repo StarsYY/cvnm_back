@@ -61,12 +61,6 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.online')" prop="online" align="center" width="80">
-        <template slot-scope="{row}">
-          <span v-if="row.online === 1" style="color: #13CE66">在线</span>
-          <span v-if="row.online === 0" style="color: #777">离线</span>
-        </template>
-      </el-table-column>
       <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row.id)">
@@ -78,7 +72,7 @@
           <el-button v-if="row.status!='0'" size="mini" @click="handleModifyStatus(row)">
             {{ $t('table.disable') }}
           </el-button>
-          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row.id, row.online, $index)">
+          <el-popconfirm title="Are you sure to delete this?" @onConfirm="handleDelete(row, $index)">
             <template #reference>
               <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
                 {{ $t('table.delete') }}
@@ -98,6 +92,7 @@ import { fetchList, changeStatus, deleteAdmin } from '@/api/admin'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { getName } from '@/utils/auth'
 
 const calendarTypeOptions = [
   { key: '1', display_name: 'Enable' },
@@ -173,9 +168,9 @@ export default {
       this.getList()
     },
     handleModifyStatus(row) {
-      if(row.online === 1) {
+      if(getName() === row.username) {
         this.$message({
-          message: '不能禁用已登录管理员',
+          message: '不能禁用已登陆管理员',
           type: 'warning'
         })
         return
@@ -210,15 +205,15 @@ export default {
       // this.$router.push({path:'/admin/admin-edit',query:{id: id}});
       // this.$router.push("/admin/admin-edit/" + id);
     },
-    handleDelete(id, online, index) {
-      if(online === 1) {
+    handleDelete(row, index) {
+      if(getName() === row.username) {
         this.$message({
-          message: '不能删除已登录管理员',
+          message: '不能删除已登陆管理员',
           type: 'warning'
         })
         return
       }
-      this.deleteId.id = id
+      this.deleteId.id = row.id
       deleteAdmin(this.deleteId).then(() => {
         this.$notify({
           title: '成功',

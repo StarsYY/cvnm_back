@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.plate" :placeholder="$t('table.plate')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -30,29 +30,19 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.plate')" min-width="100px">
+      <el-table-column :label="$t('table.name')" min-width="100px" align="center">
         <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.plate }}</span>
+          <span class="link-type" @click="handleUpdate(row)">{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.icon')" width="100px" align="center">
+      <el-table-column :label="$t('table.picture')" width="380px" align="center">
         <template slot-scope="{row}">
-          <el-image v-if="row.icon !== '' && row.icon !== null" :src="row.icon" style="width: 30px; height: 30px"></el-image>
+          <el-image v-if="row.source != '' && row.source !== null" :src="row.source" style="width: 371px; height: 182px"></el-image>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.ancestor')" min-width="100px">
+      <el-table-column :label="$t('table.jump')" min-width="200px">
         <template slot-scope="{row}">
-          <span>{{ row.superior }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.describe')" min-width="200px">
-        <template slot-scope="{row}">
-          <span>{{ row.describe }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.articleCount')" width="80px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.articleCount }}</span>
+          <el-link :href="row.jump" type="primary" target="_blank">{{ row.jump }}</el-link>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.createtime')" width="150px" align="center">
@@ -85,21 +75,24 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
-        <el-form-item :label="$t('table.icon')">
+        <el-form-item :label="$t('table.picture')" prop="source">
+          <div style="display: none">
+            <el-input v-model="temp.source" />
+          </div>
           <div class="my-upload">
             <div v-if="showImage" class="my-cover" @click="toggleShow">
               <div style="margin-bottom: 16px">
                 <svg-icon icon-class="coveimage" style="width: 37.5px; height: 33px" />
               </div>
-              <div style="font-size: 12px">请选择图标</div>
+              <div style="font-size: 12px">请选择图片</div>
             </div>
             <div v-if="!showImage" class="my-img-div" v-on:mouseover="showIcon = !showIcon" v-on:mouseout="showIcon = !showIcon">
               <img :src="image" class="my-image" :class="{'my-image-hover' : showIcon}" >
               <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="toggleShow">
                 <svg-icon icon-class="edit16" class-name='my-edit16' />
               </div>
-              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="showImage = ! showImage, temp.icon = ''">
-                <svg-icon icon-class="delete16" class-name='my-edit16' style="left: 75px" />
+              <div :class="{'my-hidden' : !showIcon}" style="cursor: pointer" @click="showImage = ! showImage, temp.source = ''">
+                <svg-icon icon-class="delete16" class-name='my-edit16' style="left: 243px" />
               </div>
             </div>
           </div>
@@ -107,21 +100,18 @@
             field="img"
             :model-value.sync="show"
             img-format="png"
-            :width="128"
-            :height="128"
+            :width="371"
+            :height="182"
             :noCircle="true"
             :noSquare="true"
             @crop-success="cropSuccess"
           />
         </el-form-item>
-        <el-form-item :label="$t('table.plate')" prop="plate">
-          <el-input v-model="temp.plate" show-word-limit maxlength="15" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+        <el-form-item :label="$t('table.name')" prop="name">
+          <el-input v-model="temp.name" show-word-limit maxlength="100" placeholder="名称" clearable @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
-        <el-form-item :label="$t('table.ancestor')">
-          <el-cascader ref="plateCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 100%" @change="setAncestor" />
-        </el-form-item>
-        <el-form-item :label="$t('table.describe')">
-          <el-input v-model="temp.describe" :autosize="{ minRows: 2 }" clearable show-word-limit maxlength="200" type="textarea" placeholder="描述" />
+        <el-form-item :label="$t('table.jump')" prop="jump">
+          <el-input v-model="temp.jump" show-word-limit maxlength="250" placeholder="跳转路径" clearable @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -138,14 +128,14 @@
 
 <script>
 import MyUpload from 'vue-image-crop-upload'
-import { fetchList, createPlate, updatePlate, deletePlate } from '@/api/plate'
-import { uploadPlateIcon } from '@/api/upload'
+import { fetchList, createRotations, updateRotations, deleteRotations } from '@/api/rotations'
+import { uploadRotations } from '@/api/upload'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
-  name: 'ComplexTable',
+  name: 'RotationsList',
   components: { MyUpload, Pagination },
   directives: { waves },
   filters: {
@@ -165,7 +155,7 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        plate: null,
+        name: null,
         sort: 'asc'
       },
       deleteId: {
@@ -174,10 +164,9 @@ export default {
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       temp: {
         id: 0,
-        plate: '',
-        ancestor: '0',
-        describe: '',
-        icon: ''
+        name: '',
+        source: '',
+        jump: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -186,12 +175,12 @@ export default {
         create: 'Create'
       },
       rules: {
-        plate: [{ required: true, message: 'plate is required', trigger: 'blur' }]
+        name: [{ required: true, message: 'name is required', trigger: 'blur' }],
+        source: [{ required: true, message: 'source is required', trigger: 'blur' }],
+        jump: [
+          { pattern: /^http?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i, message: '跳转路径不合法', trigger: 'change' }
+        ],
       },
-      props: {
-        checkStrictly: true
-      },
-      options: null,
       downloadLoading: false,
       image: '',
       imgDataUrl: {
@@ -209,10 +198,9 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.image = response.data.icon
+        this.image = response.data.source
         this.list = response.data.items
         this.total = response.data.total
-        this.options = response.data.optionPlate
 
         if(this.image !== '' && this.image !== null) {
           this.showImage = true
@@ -229,9 +217,9 @@ export default {
     },
     cropSuccess(base64, field) {
       this.imgDataUrl.base64 = base64
-      uploadPlateIcon(this.imgDataUrl).then(response => {
+      uploadRotations(this.imgDataUrl).then(response => {
         this.image = response.data.imagePath
-        this.temp.icon = response.data.imagePath
+        this.temp.source = response.data.imagePath
         this.showImage = false
         this.showIcon = false
       })
@@ -246,12 +234,6 @@ export default {
         this.sortByID(order)
       }
     },
-    setAncestor() {
-      this.temp.ancestor = this.temp.ancestor[this.temp.ancestor.length - 1]
-      if (this.temp.ancestor === undefined) {
-        this.temp.ancestor = 0
-      }
-    },
     sortByID(order) {
       if (order === 'ascending') {
         this.listQuery.sort = 'asc'
@@ -262,7 +244,9 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        plate: ''
+        name: '',
+        source: '',
+        jump: ''
       }
       this.image = ''
       this.showImage = true
@@ -278,10 +262,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          if (this.temp.ancestor === undefined) {
-            this.temp.ancestor = 0
-          }
-          createPlate(this.temp).then(response => {
+          createRotations(this.temp).then(response => {
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -289,15 +270,15 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.list.splice(this.list.length, 0, response.data.plate)
-            this.options = response.data.optionPlate
+            this.list.splice(this.list.length, 0, response.data)
+            this.total += 1
           })
         }
       })
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.image = this.temp.icon
+      this.image = this.temp.source
       if(this.image !== '' && this.image !== null) {
         this.showImage = false
       } else {
@@ -314,15 +295,9 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          if(tempData.id === tempData.ancestor) {
-            this.$message({
-              message: '不能继承自己呦',
-              type: 'warning'
-            })
-            return
-          }
-          updatePlate(tempData).then(() => {
-            this.getList()
+          updateRotations(tempData).then(() => {
+            const index = this.list.findIndex(v => v.id === this.temp.id)
+            this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -336,7 +311,7 @@ export default {
     },
     handleDelete(id, index) {
       this.deleteId.id = id
-      deletePlate(this.deleteId).then(response => {
+      deleteRotations(this.deleteId).then(() => {
         this.$notify({
           title: '成功',
           message: '删除成功',
@@ -345,19 +320,18 @@ export default {
         })
         this.list.splice(index, 1) // 列表中删除此行
         this.total -= 1
-        this.options = response.data.optionPlate
       })
     },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
-        const filterVal = ['id', 'plate', 'describe', 'superior', 'articleCount', 'createtime', 'updatetime']
+        const tHeader = ['id', 'name', 'source', 'jump', 'createtime', 'updatetime']
+        const filterVal = ['id', 'name', 'source', 'jump', 'createtime', 'updatetime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'Plate_List'
+          filename: 'Rotations_List'
         })
         this.downloadLoading = false
       })
@@ -394,8 +368,8 @@ export default {
 }
 
 .my-img-div {
-  width: 128px;
-  height: 128px;
+  width: 371px;
+  height: 182px;
   position: relative;
 }
 
@@ -407,8 +381,8 @@ export default {
   background: #f8f8f8;
   border: 1px dashed #d6d6d6;
   border-radius: 4px;
-  width: 128px;
-  height: 128px;
+  width: 371px;
+  height: 182px;
 }
 
 .my-image {
@@ -424,8 +398,8 @@ export default {
   width: 28px;
   height: 28px;
   position: absolute;
-  left: 25px;
-  top: 50px;
+  left: 100px;
+  top: 77px;
   filter: invert(100%) sepia(5%) saturate(530%) hue-rotate(193deg) brightness(114%) contrast(100%);
 }
 

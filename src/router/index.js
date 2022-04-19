@@ -368,6 +368,22 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/usermedal',
+    component: Layout,
+    redirect: '/usermedal/usermedal-list',
+    name: 'UserMedal',
+    meta: { title: 'usermedal', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'usermedal-list',
+        component: () => import('@/views/usermedal/usermedal-list'),
+        name: 'UserMedalList',
+        meta: { title: 'usermedallist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/message',
     component: Layout,
     redirect: '/message/message-list',
@@ -379,6 +395,70 @@ export const asyncRoutes = [
         component: () => import('@/views/message/message-list'),
         name: 'MessageList',
         meta: { title: 'messagelist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/report',
+    component: Layout,
+    redirect: '/report/report-list',
+    name: 'Report',
+    meta: { title: 'report', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'report-list',
+        component: () => import('@/views/report/report-list'),
+        name: 'ReportList',
+        meta: { title: 'reportlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/video',
+    component: Layout,
+    redirect: '/video/video-list',
+    name: 'video',
+    meta: { title: 'video', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'video-list',
+        component: () => import('@/views/video/video-list'),
+        name: 'VideoList',
+        meta: { title: 'videolist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/learning',
+    component: Layout,
+    redirect: '/learning/learning-list',
+    name: 'Learning',
+    meta: { title: 'learning', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'learning-list',
+        component: () => import('@/views/learning/learning-list'),
+        name: 'LearningList',
+        meta: { title: 'learninglist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/sign',
+    component: Layout,
+    redirect: '/sign/sign-list',
+    name: 'Sign',
+    meta: { title: 'sign', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'sign-list',
+        component: () => import('@/views/sign/sign-list'),
+        name: 'SignList',
+        meta: { title: 'signlist', icon: 'tree' }
       }
     ]
   },
@@ -401,6 +481,12 @@ export const asyncRoutes = [
         component: () => import('@/views/system/top-avigation'),
         name: 'TopAvigation',
         meta: { title: 'topavigation', icon: 'tree' }
+      },
+      {
+        path: 'school-rotation',
+        component: () => import('@/views/system/school-rotation'),
+        name: 'SchoolRotation',
+        meta: { title: 'schoolrotation', icon: 'tree' }
       }
     ]
   },

@@ -60,16 +60,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.online')" prop="islog" width="100px" align="center">
-        <template slot-scope="{row}">
-          <span v-if="row.online === 1" style="color: #13CE66">在线</span>
-          <span v-if="row.online === 0" style="color: #777">离线</span>
-        </template>
-      </el-table-column>
       <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row,$index}">
+        <template slot-scope="{row}">
           <el-button type="primary" size="mini" @click="handleUpdate(row.uid)">
-            {{ $t('table.edit') }}
+            <!-- {{ $t('table.edit') }} -->
+            封号
           </el-button>
           <el-button v-if="row.status!='启用'" size="mini" type="success" @click="handleModifyStatus(row)">
             {{ $t('table.enable') }}
@@ -78,14 +73,14 @@
             {{ $t('table.disable') }}
           </el-button>
 
-          <el-popconfirm title="此为软删除，彻底删除请点击右键" @onConfirm="handleDelete(row)">
+          <!-- <el-popconfirm title="此为软删除，彻底删除请点击右键" @onConfirm="handleDelete(row)">,$index
             <template #reference>
               <el-button v-if="row.status!='deleted'" v-model="deleteId.uid" size="mini" type="danger" style="margin-left: 10px" @contextmenu.right.native.prevent="handleDeleteR(row.uid, $index)">
                 <span v-if="row.isdel === 0">{{ $t('table.delete') }}</span>
                 <span v-if="row.isdel === 1">{{ $t('table.restore') }}</span>
               </el-button>
             </template>
-          </el-popconfirm>
+          </el-popconfirm> -->
         </template>
       </el-table-column>
     </el-table>

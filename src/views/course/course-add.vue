@@ -57,10 +57,13 @@
           </el-col>
         </el-row>
 
-        <el-form-item prop="video" style="margin-bottom: 30px">
-          <div style="border: 1px solid black">
-            <el-button @click="uploadVideo">上传</el-button>
-          </div>
+        <el-form-item>
+          <Uploader ref="upload"></Uploader>
+        </el-form-item>
+
+        <el-form-item style="margin-bottom: 40px;" label-width="40px" label="简介">
+          <el-input v-model="postForm.summary" maxlength="300" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入简介" />
+          <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
         <el-form-item prop="introduction" style="margin-bottom: 30px;">
@@ -108,9 +111,9 @@ import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MyUpload from 'vue-image-crop-upload'
 import { fetchCourse, fetchLabel, createCourse, updateCourse } from '@/api/course'
-import { searchUser } from '@/api/remote-search'
+import { searchUserCourse } from '@/api/remote-search'
 import { uploadCourseCover } from '@/api/upload'
-import Bus from '@/utils/bus';
+import Uploader from '@/views/components-demo/Uploader.vue'
 
 const defaultForm = {
   id: undefined,
@@ -119,13 +122,17 @@ const defaultForm = {
   cover: '',
   modularid: '',
   labelid: '',
+  summary: '',
+  introduction: '',
   status: 'draft',
-  price: 0
+  price: 0,
+  video: '',
+  num: 0
 }
 
 export default {
   name: 'CourseAdd',
-  components: { Tinymce, MDinput, Upload, Sticky, MyUpload },
+  components: { Tinymce, MDinput, Upload, Sticky, MyUpload, Uploader },
   data() {
     const validateRequire = (rule, value, callback) => {
       if (value === '') {
@@ -144,6 +151,7 @@ export default {
     }
     return {
       postForm: Object.assign({}, defaultForm),
+      video: [],
       formatTooltip,
       price: 0,
       ids: [],
@@ -170,14 +178,9 @@ export default {
     }
   },
   computed: {
-    // // 文件选择后的回调
-    // Bus.$on('fileAdded', () => {
-    //     console.log('文件已选择')
-    // }),
-    // // 文件上传成功的回调
-    // Bus.$on('fileSuccess', () => {
-    //     console.log('文件上传成功')
-    // }),
+    contentShortLength() {
+      return this.postForm.summary.length
+    },
     lang() {
       return this.$store.getters.language
     },
@@ -189,12 +192,6 @@ export default {
     this.fetchLabel()
   },
   methods: {
-    uploadVideo() {
-      // 打开文件选择框
-      Bus.$emit('openUploader', {
-        id: '1111'  // 传入的参数
-      })
-    },
     fetchData(id) {
       fetchCourse(id).then(response => {
         this.postForm = response.data
@@ -235,7 +232,7 @@ export default {
       })
     },
     setTagsViewTitle() {
-      const title = this.lang === 'zh' ? '编辑文章' : 'Edit Course'
+      const title = this.lang === 'zh' ? '编辑课程' : 'Edit Course'
       const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.id}` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
@@ -252,7 +249,22 @@ export default {
     changeId() {
       this.postForm.userid = this.author
     },
+    setVideo() {
+      this.video = this.$refs.upload.sendUploaderToCourseAdd()
+      if(this.postForm.num === 0 && this.video.length === 0) {
+        this.$message({
+          message: '请上传视频文件',
+          type: 'error'
+        })
+        return false
+      }
+      this.postForm.video = JSON.stringify(this.video)
+      return true
+    },
     submitForm() {
+      if(!this.setVideo()) {
+        return false
+      }
       var idss = ','
       for (const id in this.ids) {
         idss += this.ids[id] + ','
@@ -308,6 +320,9 @@ export default {
       }
     },
     draftForm() {
+      if(!this.setVideo()) {
+        return false
+      }
       if (this.postForm.name.length === 0) {
         this.$message({
           message: '请填写课程名称',
@@ -365,7 +380,7 @@ export default {
       }
     },
     getRemoteUserList(query) {
-      searchUser(query).then(response => {
+      searchUserCourse(query).then(response => {
         if (!response.data.userList) return
         this.userListOptions = response.data.userList
       })

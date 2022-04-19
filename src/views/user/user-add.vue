@@ -4,44 +4,55 @@
       <el-input v-model="dataAdd.uid" type="hidden" />
       <el-input v-model="dataAdd.portrait" type="hidden" />
 
-      <pan-thumb :image="image" style="margin-left: 100px" />
-      <el-button type="primary" icon="el-icon-upload" style="margin-left: 40px" @click="toggleShow">
-        Change Portrait
-      </el-button>
-      <my-upload
-        field="img"
-        :width="110"
-        :height="110"
-        :model-value.sync="show"
-        img-format="png"
-        @crop-success="cropSuccess"
-      />
-      <el-form-item style="margin-left: 40px; margin-top: 40px" label-width="90px" label="昵称:" prop="nickname">
+      <div v-if="!edit">
+        <pan-thumb :image="image" style="margin-left: 100px" />
+        <el-button type="primary" icon="el-icon-upload" style="margin-left: 40px" @click="toggleShow">
+          Change Portrait
+        </el-button>
+        <my-upload
+          field="img"
+          :width="110"
+          :height="110"
+          :model-value.sync="show"
+          img-format="png"
+          @crop-success="cropSuccess"
+        />
+      </div>
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 40px" label-width="90px" label="昵称:" prop="nickname">
         <el-input v-model="dataAdd.nickname" maxlength="50" type="text" class="cs-text" autosize placeholder="请输入昵称" />
         <span v-show="nicknameShortLength" class="word-counter">{{ nicknameShortLength }}words</span>
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="密码:" prop="password">
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="密码:" prop="password">
         <el-input v-model="dataAdd.password" maxlength="20" type="password" class="cs-text" placeholder="请输入密码" show-password />
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="简介:">
+      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="145px" label="是否为管理员:">
+        <el-switch
+          v-model="isadmin"
+          inline-prompt
+          active-text="是"
+          inactive-text="否"
+          @change="setIsAdmin"
+        />
+      </el-form-item>
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="简介:">
         <el-input v-model="dataAdd.summary" maxlength="250" :rows="1" type="textarea" class="cs-textarea" autosize placeholder="请输入简介" />
         <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="性别:" size="small">
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="性别:" size="small">
         <el-radio-group v-model="dataAdd.sex">
           <el-radio-button label="女"></el-radio-button>
           <el-radio-button label="男"></el-radio-button>
           <el-radio-button label="保密"></el-radio-button>
         </el-radio-group>
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="姓名:">
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="姓名:">
         <el-input v-model="dataAdd.name" maxlength="20" type="text" class="cs-text" autosize placeholder="请输入姓名" />
         <span v-if="dataAdd.name.length > 0" class="word-counter">{{ dataAdd.name.length }}words</span>
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="手机号:" prop="phone">
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="手机号:" prop="phone">
         <el-input v-model="dataAdd.phone" type="text" class="cs-text" autosize placeholder="请输入手机号" />
       </el-form-item>
-      <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="90px" label="邮箱:" prop="email">
+      <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="邮箱:" prop="email">
         <el-input v-model="dataAdd.email" type="text" class="cs-text" autosize placeholder="请输入邮箱" />
       </el-form-item>
       <el-form-item v-if="dataAdd.uid > 0" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="封号时间:">
@@ -126,6 +137,7 @@ export default {
         uid: '',
         nickname: '',
         password: '',
+        isadmin: 0,
         summary: '',
         portrait: '',
         sex: '女',
@@ -135,12 +147,14 @@ export default {
         starttime: '',
         finaltime: ''
       },
+      isadmin: false,
       bantime: [],
       image: '',
       imgDataUrl: {
         base64: '' // the datebase64 url of created image
       },
       show: false,
+      edit: false
     }
   },
   computed: {
@@ -156,6 +170,7 @@ export default {
   },
   created() {
     if (this.$route.params.uid > 0) {
+      this.edit = true
       this.getUser()
     }
   },
@@ -164,8 +179,14 @@ export default {
       fetchUser(this.$route.params.uid).then(response => {
         this.dataAdd = response.data
         this.image = response.data.portrait
-        this.bantime[0] = response.data.starttime
-        this.bantime[1] = response.data.finaltime
+
+        if(response.data.starttime !== null && response.data.starttime !== '') {
+          this.bantime[0] = response.data.starttime
+          this.bantime[1] = response.data.finaltime
+        }
+        if(response.data.isadmin === 1) {
+          this.isadmin = true
+        }
       })
     },
     toggleShow() {
@@ -184,6 +205,13 @@ export default {
       this.dataAdd.starttime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds()
       d = val[1]
       this.dataAdd.finaltime = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds()
+    },
+    setIsAdmin() {
+      if(this.isadmin) {
+        this.dataAdd.isadmin = 1
+      } else {
+        this.dataAdd.isadmin = 0
+      }
     },
     Create() {
       this.$refs.form.validate(valid => {

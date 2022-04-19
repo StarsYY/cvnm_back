@@ -16,6 +16,9 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         {{ $t('table.export') }}
       </el-button>
+      <el-checkbox v-model="showSend" class="filter-item" style="margin-left:45px" @change="tableKey=tableKey+1">
+        {{ $t('table.sendMessage') }}
+      </el-checkbox>
     </div>
 
     <el-table
@@ -79,9 +82,37 @@
           </el-popconfirm>
         </template>
       </el-table-column>
+      <el-table-column v-if="showSend" :label="$t('table.sendMessage')" fixed="right" align="center" width="120" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button type="danger" size="mini" plain @click="sendMsg(row)">
+            {{ $t('table.sendMessage') }}
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+
+    <el-dialog title="发送消息" :visible.sync="dialogFormVisible">
+      <el-form :model="form">
+        <el-form-item label="内容" label-width="20%">
+          <el-input
+            type="textarea"
+            :rows="3"
+            placeholder="请输入内容"
+            v-model="form.content"
+            clearable
+            maxlength="250"
+            show-word-limit
+          >
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitMessage">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -90,6 +121,7 @@ import { fetchList, changeStatus, deleteDiscuss } from '@/api/discuss'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { sendMessageToUser } from '@/api/article'
 
 export default {
   name: 'DiscussList',
@@ -128,7 +160,13 @@ export default {
       },
       statusOptions: [{ label: '已通过', key: '1' }, { label: '待审核', key: '0' }],
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
-      downloadLoading: false
+      downloadLoading: false,
+      dialogFormVisible: false,
+      form: {
+        receiveuid: '',
+        content: ''
+      },
+      showSend: false
     }
   },
   created() {
@@ -195,6 +233,19 @@ export default {
         });
         delId.forEach((item, $index) => this.list.splice(item - $index, 1));
         this.total -= response.data.length
+      })
+    },
+    sendMsg(row) {
+      this.dialogFormVisible = true
+      this.form.receiveuid = row.userid
+    },
+    submitMessage() {
+      sendMessageToUser(this.form).then(() => {
+        this.$message({
+          message: '发送成功',
+          type: 'success'
+        })
+        this.dialogFormVisible = false
       })
     },
     handleDownload() {

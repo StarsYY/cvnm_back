@@ -52,7 +52,9 @@
       <el-table-column :label="$t('table.payment')" prop="payment" width="100px" align="center">
         <template slot-scope="{row}">
           <span v-if="row.payment === null">-</span>
-          <span v-else>{{ row.payment }}</span>
+          <span v-if="row.payment === 0">微信支付</span>
+          <span v-if="row.payment === 1">支付宝支付</span>
+          <span v-if="row.payment === 2">积分兑换</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
@@ -80,7 +82,7 @@
           <span>{{ row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="130" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-popconfirm title="是否删除?" @onConfirm="handleDelete(row.id, $index)">
             <template #reference>
@@ -137,7 +139,7 @@ export default {
         id: null
       },
       transactionOptions: [{ label: '交易开启', key: 1 }, { label: '交易关闭', key: 0 }, { label: '已付款', key: 2 }],
-      paymentOptions: [{ label: '微信', key: '微信' }, { label: '支付宝', key: '支付宝' }],
+      paymentOptions: [{ label: '微信', key: 0 }, { label: '支付宝', key: 1 }, { label: '积分兑换', key: 2 }],
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
       downloadLoading: false
     }

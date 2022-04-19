@@ -1,17 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.nickname" :placeholder="$t('table.nickname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" :placeholder="$t('table.rname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.position" :placeholder="$t('table.position')" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.account" :placeholder="$t('table.account')" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in accountOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in statusOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.nickname" :placeholder="$t('table.username')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -33,14 +23,17 @@
       @sort-change="sortChange"
     >
       <el-table-column type="expand">
-        <template #default="props">
-          <p>公司/学校名称：{{ props.row.school }}</p>
-          <p>擅长的技术：{{ props.row.technology }}</p>
-          <p>自我介绍：{{ props.row.introduce }}</p>
-          <p>经历：{{ props.row.start }} - {{ props.row.end }}</p>
-          <p><span style="margin-right: 40px"></span>{{ props.row.experience }}</p>
-          <p><span style="margin-right: 40px"></span>{{ props.row.detail }}</p>
-          <p v-if="props.row.photo !== null && props.row.photo !== ''">照片：<img :src="props.row.photo"></p>
+        <template slot-scope="{row}">
+          <div v-if="row.datasource === 'article'">
+            <div>被举报文章ID：{{ row.dataid }}</div>
+            <div>被举报文章标题：{{ row.reReportContent }}</div>
+          </div>
+          <div v-else>
+            <div>被举报评论ID：{{ row.dataid }}</div>
+            <div>被举报评论内容：</div>
+            <br>
+            <div v-html="row.reReportContent"></div>
+          </div>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.id')" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
@@ -48,41 +41,24 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.username')" prop="username" width="210px" align="center">
+      <el-table-column :label="$t('table.username')" prop="username" width="200px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.rname')" prop="name" width="210px" align="center">
+      <el-table-column :label="$t('table.describe')" prop="reviewname">
         <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
+          <span>{{ row.describe }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.position')" prop="name" width="80px" align="center">
+      <el-table-column :label="$t('table.createtime')" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.position }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.account')" prop="name" width="180px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.account }}</span>  
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.email')" prop="name" width="210px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.email }}</span>  
+          <span>{{ row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row,$index}">
-          <el-button v-if="row.status!='1'" size="mini" type="success" @click="handleModifyStatus(row)">
-            {{ $t('table.pass') }}
-          </el-button>
-          <el-button v-if="row.status!='0'" size="mini" @click="handleModifyStatus(row)">
-            {{ $t('table.audit') }}
-          </el-button>
-
-          <el-popconfirm title="是否删除？" @onConfirm="handleDelete(row.id, $index)">
+        <template slot-scope="{row, $index}">
+          <el-popconfirm title="确定删除？" @onConfirm="handleDelete(row.id, $index)">
             <template #reference>
               <el-button v-if="row.status!='deleted'" v-model="deleteId.id" size="mini" type="danger" style="margin-left: 10px">
                 {{ $t('table.delete') }}
@@ -98,31 +74,18 @@
 </template>
 
 <script>
-import { fetchList, changeStatus, deleteVerify } from '@/api/verify'
+import { fetchList, deleteReport } from '@/api/report'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
-const calendarTypeOptions = [
-  { key: '专家', display_name: '专家' },
-  { key: '讲师', display_name: '讲师' }
-]
-
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
-
 export default {
-  name: 'VerifyList',
+  name: 'ReportList',
   components: { Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        1: 'success',
-        0: 'info',
-        2: 'warning',
         deleted: 'danger'
       }
       return statusMap[status]
@@ -141,23 +104,12 @@ export default {
         page: 1,
         limit: 20,
         nickname: null,
-        name: null,
-        position: null,
-        account: null,
-        status: null,
         sort: 'asc'
       },
       deleteId: {
         id: null
       },
-      calendarTypeOptions,
       sortOptions: [{ label: 'ID 升序', key: 'asc' }, { label: 'ID 降序', key: 'desc' }],
-      accountOptions: [{ label: '个人账户', key: '个人账户' }, { label: '非个人账户', key: '非个人账户' }],
-      statusOptions: [{ label: '已通过', key: '1' }, { label: '待审核', key: '0' }],
-      textMap: {
-        update: 'Edit',
-        create: 'Create'
-      },
       downloadLoading: false
     }
   },
@@ -181,19 +133,6 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row) {
-      changeStatus(row).then(() => {
-        this.$message({
-          message: '操作成功',
-          type: 'success'
-        })
-        if (row.status === '1') {
-          row.status = '0'
-        } else {
-          row.status = '1'
-        }
-      })
-    },
     sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -210,27 +149,27 @@ export default {
     },
     handleDelete(id, index) {
       this.deleteId.id = id
-      deleteVerify(this.deleteId).then(() => {
+      deleteReport(this.deleteId).then(() => {
         this.$notify({
           title: '成功',
-          message: '彻底删除成功',
+          message: '删除成功',
           type: 'success',
           duration: 2000
         })
-        this.list.splice(index, 1) // 列表中删除此行
+        this.list.splice(index, 1);
         this.total -= 1
       })
     },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['id', 'username', 'name']
-        const filterVal = ['id', 'username', 'name']
+        const tHeader = ['id', 'username', 'datasource', 'dataid', 'describe', 'createtime']
+        const filterVal = ['id', 'username', 'datasource', 'dataid', 'describe', 'createtime']
         const data = this.formatJson(filterVal)
         excel.export_json_to_excel({
           header: tHeader,
           data,
-          filename: 'Verify-list'
+          filename: 'Report-list'
         })
         this.downloadLoading = false
       })
