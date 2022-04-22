@@ -23,7 +23,7 @@
             </el-form-item>
 
             <el-form-item :label="$t('table.modular')" prop="modularid">
-              <div>
+              <div style="display: none">
                 <el-input v-model="postForm.modularid" type="text"></el-input>
               </div>
               <el-cascader ref="plateCascader" v-model="postForm.modularid" :options="options" :props="props" clearable style="width: 420px" @change="setAncestor" />
@@ -33,8 +33,8 @@
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="9">
-                  <el-form-item label-width="40px" label="作者" class="postInfo-container-item" prop="userid">
-                    <div>
+                  <el-form-item label-width="50px" label="作者" class="postInfo-container-item" prop="userid">
+                    <div style="display: none">
                       <el-input v-model="postForm.userid" type="text" />
                     </div>
                     <el-select v-model="author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="搜索" @change="changeId">
@@ -45,7 +45,7 @@
 
                 <el-col :span="9">
                   <el-form-item label-width="120px" label="关键字" class="postInfo-container-item" prop="labelid">
-                    <div>
+                    <div style="display: none">
                       <el-input v-model="postForm.labelid" type="text" />
                     </div>
                     <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择关键字" @change="setLabelId">
@@ -78,8 +78,8 @@
           <Tinymce ref="editor" v-model="postForm.introduction" :height="400" />
         </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px" label-width="40px" label="封面" prop="cover">
-          <div>
+        <el-form-item style="margin-bottom: 40px" label-width="50px" label="封面" prop="cover">
+          <div style="display: none">
             <el-input v-model="postForm.cover" type="text" />
           </div>
           <div class="my-upload">
