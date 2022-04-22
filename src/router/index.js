@@ -8,8 +8,6 @@ import Layout from '@/layout'
 
 /* Router Modules */
 import componentsRouter from './modules/components'
-import chartsRouter from './modules/charts'
-import nestedRouter from './modules/nested'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -108,7 +106,7 @@ export const asyncRoutes = [
     component: Layout,
     redirect: '/admin/admin-list',
     name: 'Admin',
-    meta: { title: 'adminlist', icon: 'table' },
+    meta: { title: 'admin', icon: 'table' },
     children: [
       {
         path: 'admin-list',
@@ -120,14 +118,42 @@ export const asyncRoutes = [
         path: 'admin-add',
         component: () => import('@/views/admin/admin-add'),
         name: 'AdminAdd',
-        meta: { title: 'adminadd' },
-        hidden: true
+        meta: { title: 'adminadd' }
       },
       {
         path: 'admin-edit/:id',
         component: () => import('@/views/admin/admin-add'),
-        name: 'AdminEdit',
+        name: 'AdminAdd',
         meta: { title: 'adminedit' },
+        hidden: true
+      }
+    ]
+  },
+
+  {
+    path: '/user',
+    component: Layout,
+    redirect: '/user/user-list',
+    name: 'User',
+    meta: { title: 'user', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'user-list',
+        component: () => import('@/views/user/user-list'),
+        name: 'UserList',
+        meta: { title: 'userlist', icon: 'tree' }
+      },
+      {
+        path: 'user-add',
+        component: () => import('@/views/user/user-add'),
+        name: 'UserAdd',
+        meta: { title: 'useradd', icon: 'tree' }
+      },
+      {
+        path: 'user-edit/:id',
+        component: () => import('@/views/user/user-add'),
+        name: 'UserAdd',
+        meta: { title: 'useredit' },
         hidden: true
       }
     ]
@@ -157,28 +183,22 @@ export const asyncRoutes = [
         component: () => import('@/views/label/root-list'),
         name: 'RootList',
         meta: { title: 'rootlist', icon: 'tree' }
-      },
-      {
-        path: 'plate-list',
-        component: () => import('@/views/label/plate-list'),
-        name: 'PlateList',
-        meta: { title: 'platelist', icon: 'tree' }
-      },
+      }
     ]
   },
 
   {
-    path: '/modular',
+    path: '/plate',
     component: Layout,
-    redirect: '/modular/modular-list',
-    name: 'Modular',
-    meta: { title: 'modular', icon: 'el-icon-s-help' },
+    redirect: '/plate/plate-list',
+    name: 'Plate',
+    meta: { title: 'plate', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'modular-list',
-        component: () => import('@/views/modular/modular-list'),
-        name: 'ModularList',
-        meta: { title: 'modularlist', icon: 'tree' }
+        path: 'plate-list',
+        component: () => import('@/views/plate/plate-list'),
+        name: 'PlateList',
+        meta: { title: 'platelist', icon: 'tree' }
       }
     ]
   },
@@ -213,6 +233,38 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/comment',
+    component: Layout,
+    redirect: '/comment/comment-list',
+    name: 'Comment',
+    meta: { title: 'comment', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'comment-list',
+        component: () => import('@/views/comment/comment-list'),
+        name: 'CommentList',
+        meta: { title: 'commentlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/modular',
+    component: Layout,
+    redirect: '/modular/modular-list',
+    name: 'Modular',
+    meta: { title: 'modular', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'modular-list',
+        component: () => import('@/views/modular/modular-list'),
+        name: 'ModularList',
+        meta: { title: 'modularlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/course',
     component: Layout,
     redirect: '/course/course-list',
@@ -242,79 +294,33 @@ export const asyncRoutes = [
   },
 
   {
-    path: '/order',
+    path: '/video',
     component: Layout,
-    redirect: '/order/order-list',
-    name: 'Order',
-    meta: { title: 'order', icon: 'el-icon-s-help' },
+    redirect: '/video/video-list',
+    name: 'video',
+    meta: { title: 'video', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'order-list',
-        component: () => import('@/views/order/order-list'),
-        name: 'OrderList',
-        meta: { title: 'orderlist', icon: 'tree' }
+        path: 'video-list',
+        component: () => import('@/views/video/video-list'),
+        name: 'VideoList',
+        meta: { title: 'videolist', icon: 'tree' }
       }
     ]
   },
 
   {
-    path: '/user',
+    path: '/learning',
     component: Layout,
-    redirect: '/user/user-list',
-    name: 'User',
-    meta: { title: 'user', icon: 'el-icon-s-help' },
+    redirect: '/learning/learning-list',
+    name: 'Learning',
+    meta: { title: 'learning', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'user-list',
-        component: () => import('@/views/user/user-list'),
-        name: 'UserList',
-        meta: { title: 'userlist', icon: 'tree' }
-      },
-      {
-        path: 'user-add',
-        component: () => import('@/views/user/user-add'),
-        name: 'UserAdd',
-        meta: { title: 'useradd', icon: 'tree' },
-        hidden: true
-      },
-      {
-        path: 'user-edit/:id',
-        component: () => import('@/views/user/user-add'),
-        name: 'UserEdit',
-        meta: { title: 'useredit' },
-        hidden: true
-      }
-    ]
-  },
-
-  {
-    path: '/verify',
-    component: Layout,
-    redirect: '/verify/verify-list',
-    name: 'Verify',
-    meta: { title: 'verify', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'verify-list',
-        component: () => import('@/views/verify/verify-list'),
-        name: 'VerifyList',
-        meta: { title: 'verify', icon: 'tree' }
-      }
-    ]
-  },
-
-  {
-    path: '/comment',
-    component: Layout,
-    redirect: '/comment/comment-list',
-    name: 'Comment',
-    meta: { title: 'comment', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'comment-list',
-        component: () => import('@/views/comment/comment-list'),
-        name: 'CommentList',
-        meta: { title: 'commentlist', icon: 'tree' }
+        path: 'learning-list',
+        component: () => import('@/views/learning/learning-list'),
+        name: 'LearningList',
+        meta: { title: 'learninglist', icon: 'tree' }
       }
     ]
   },
@@ -336,17 +342,33 @@ export const asyncRoutes = [
   },
 
   {
-    path: '/integral',
+    path: '/order',
     component: Layout,
-    redirect: '/integral/integral-list',
-    name: 'Integral',
-    meta: { title: 'integral', icon: 'el-icon-s-help' },
+    redirect: '/order/order-list',
+    name: 'Order',
+    meta: { title: 'order', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'integral-list',
-        component: () => import('@/views/integral/integral-list'),
-        name: 'IntegralList',
-        meta: { title: 'integrallist', icon: 'tree' }
+        path: 'order-list',
+        component: () => import('@/views/order/order-list'),
+        name: 'OrderList',
+        meta: { title: 'orderlist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
+    path: '/verify',
+    component: Layout,
+    redirect: '/verify/verify-list',
+    name: 'Verify',
+    meta: { title: 'verify', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'verify-list',
+        component: () => import('@/views/verify/verify-list'),
+        name: 'VerifyList',
+        meta: { title: 'verify', icon: 'tree' }
       }
     ]
   },
@@ -384,6 +406,22 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/integral',
+    component: Layout,
+    redirect: '/integral/integral-list',
+    name: 'Integral',
+    meta: { title: 'integral', icon: 'el-icon-s-help' },
+    children: [
+      {
+        path: 'integral-list',
+        component: () => import('@/views/integral/integral-list'),
+        name: 'IntegralList',
+        meta: { title: 'integrallist', icon: 'tree' }
+      }
+    ]
+  },
+
+  {
     path: '/message',
     component: Layout,
     redirect: '/message/message-list',
@@ -411,38 +449,6 @@ export const asyncRoutes = [
         component: () => import('@/views/report/report-list'),
         name: 'ReportList',
         meta: { title: 'reportlist', icon: 'tree' }
-      }
-    ]
-  },
-
-  {
-    path: '/video',
-    component: Layout,
-    redirect: '/video/video-list',
-    name: 'video',
-    meta: { title: 'video', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'video-list',
-        component: () => import('@/views/video/video-list'),
-        name: 'VideoList',
-        meta: { title: 'videolist', icon: 'tree' }
-      }
-    ]
-  },
-
-  {
-    path: '/learning',
-    component: Layout,
-    redirect: '/learning/learning-list',
-    name: 'Learning',
-    meta: { title: 'learning', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'learning-list',
-        component: () => import('@/views/learning/learning-list'),
-        name: 'LearningList',
-        meta: { title: 'learninglist', icon: 'tree' }
       }
     ]
   },
@@ -491,93 +497,16 @@ export const asyncRoutes = [
     ]
   },
 
-  {
-    path: '/permission',
-    component: Layout,
-    redirect: '/permission/page',
-    alwaysShow: true, // will always show the root menu
-    name: 'Permission',
-    meta: {
-      title: 'permission',
-      icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
-    },
-    children: [
-      {
-        path: 'page',
-        component: () => import('@/views/permission/page'),
-        name: 'PagePermission',
-        meta: {
-          title: 'pagePermission',
-          roles: ['admin'] // or you can only set roles in sub nav
-        }
-      },
-      {
-        path: 'directive',
-        component: () => import('@/views/permission/directive'),
-        name: 'DirectivePermission',
-        meta: {
-          title: 'directivePermission'
-          // if do not set roles, means: this page does not require permission
-        }
-      },
-      {
-        path: 'role',
-        component: () => import('@/views/permission/role'),
-        name: 'RolePermission',
-        meta: {
-          title: 'rolePermission',
-          roles: ['admin']
-        }
-      }
-    ]
-  },
-
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
-  chartsRouter,
-  nestedRouter,
-  // tableRouter,
-
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/list',
-    name: 'Example',
-    meta: {
-      title: 'example',
-      icon: 'el-icon-s-help'
-    },
-    children: [
-      {
-        path: 'create',
-        component: () => import('@/views/example/create'),
-        name: 'CreateArticle',
-        meta: { title: 'createArticle', icon: 'edit' }
-      },
-      {
-        path: 'edit/:id(\\d+)',
-        component: () => import('@/views/example/edit'),
-        name: 'EditArticle',
-        meta: { title: 'editArticle', noCache: true, activeMenu: '/example/list' },
-        hidden: true
-      },
-      {
-        path: 'list',
-        component: () => import('@/views/example/list'),
-        name: 'ArticleList',
-        meta: { title: 'articleList', icon: 'list' }
-      }
-    ]
-  },
 
   {
     path: 'external-link',
     component: Layout,
     children: [
       {
-        path: 'https://www.baidu.com',
-        meta: { title: 'ymall', icon: 'link' }
+        path: 'http://localhost:8088/',
+        meta: { title: 'cvnm', icon: 'link' }
       }
     ]
   },

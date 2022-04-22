@@ -33,8 +33,8 @@
       <el-col :xs="19" :sm="19" :md="19" :lg="19" :xl="19">
         <div class="right-container">
           <div class="filter-container">
-            <el-input v-model="listQuery.name" :placeholder="$t('table.name')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
-            <el-input v-model="listQuery.nickname" :placeholder="$t('table.author')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
+            <el-input v-model="listQuery.name" maxlength="120" :placeholder="$t('table.name')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
+            <el-input v-model="listQuery.nickname" maxlength="20" :placeholder="$t('table.author')" style="width: 275px;" class="filter-item" @keyup.enter.native="handleFilter" />
             <el-select v-model="cgids" value-key="category" :placeholder="$t('table.categoryMap')" filterable multiple clearable class="filter-item" style="width: 275px" @change="selectCategory">
               <template v-for="item in categoryOptions">
                 <el-option v-if="cchildren.length === 0" :key="item.id" :label="item.category" :value="item" />

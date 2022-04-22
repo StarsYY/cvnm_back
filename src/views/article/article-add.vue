@@ -21,20 +21,26 @@
         <el-row>
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+              <MDinput v-model="postForm.title" :maxlength="120" name="name" required>
                 标题
               </MDinput>
             </el-form-item>
 
-            <el-form-item :label="$t('table.ancestor')">
+            <el-form-item :label="$t('table.ancestor')" prop="plateid">
+              <div style="display: none">
+                <el-input v-model="postForm.plateid" type="text" />
+              </div>
               <el-cascader ref="plateCascader" v-model="postForm.plateid" :options="options" :props="props" clearable style="width: 420px" @change="setAncestor" />
             </el-form-item>
             <br>
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="6">
-                  <el-form-item label-width="45px" label="作者:" class="postInfo-container-item">
+                <el-col :span="7">
+                  <el-form-item label-width="55px" label="作者:" class="postInfo-container-item" prop="userid">
+                    <div style="display: none">
+                      <el-input v-model="postForm.userid" type="text" />
+                    </div>
                     <el-select v-model="author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="搜索" @change="changeId">
                       <el-option v-for="(item, key) in userListOptions" :key="key" :label="item" :value="key" />
                     </el-select>
@@ -42,8 +48,11 @@
                 </el-col>
 
                 <el-col :span="9">
-                  <el-form-item label-width="120px" label="标签:" class="postInfo-container-item">
-                    <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择标签">
+                  <el-form-item label-width="120px" label="标签:" class="postInfo-container-item" prop="labelid">
+                    <div style="display: none">
+                      <el-input v-model="postForm.labelid" type="text" />
+                    </div>
+                    <el-select v-model="ids" multiple-limit="5" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择标签" @change="setLabelId">
                       <el-option v-for="(item, key) in labelOptions" :key="key" :label="item" :value="key" />
                     </el-select>
                   </el-form-item>
@@ -63,11 +72,11 @@
         </el-row>
 
         <el-form-item style="margin-bottom: 40px" label-width="45px" label="简介:">
-          <el-input v-model="postForm.summary" maxlength="300" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入简介" />
+          <el-input v-model="postForm.summary" maxlength="500" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入简介（选填）" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
-        <el-form-item prop="content" style="margin-bottom: 30px">
+        <el-form-item style="margin-bottom: 30px" prop="content">
           <Tinymce ref="editor" v-model="postForm.content" :height="400" />
         </el-form-item>
 
@@ -187,7 +196,12 @@ export default {
       rules: {
         title: [{ validator: validateRequire }],
         content: [{ validator: validateRequire }],
-        source: [{ validator: validateSourceUri, trigger: 'blur' }]
+        source: [{ validator: validateSourceUri, trigger: 'blur' }],
+        plateid: [{ required: true, message: '请选择一个板块', trigger: 'change' }],
+        labelid: [
+          { required: true, message: '至少添加一个标签', trigger: 'change' }
+        ],
+        userid: [{ required: true, message: '请选择一个作者', trigger: 'change' }],
       },
       labelOptions: null,
       hotOptions: [{ label: 'Hot', key: 'Hot' }, { label: 'Top', key: 'Top' }],
@@ -286,19 +300,17 @@ export default {
     changeId() {
       this.postForm.userid = this.author
     },
-    submitForm() {
+    setLabelId() {
       var idss = ','
       for (const id in this.ids) {
         idss += this.ids[id] + ','
       }
       this.postForm.labelid = idss
-      if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.plateid === '' || this.postForm.labelid === ',') {
-        this.$message({
-          message: '作者、标签和板块为必传项',
-          type: 'error'
-        })
-        return
+      if(this.postForm.labelid == ',') {
+        this.postForm.labelid = ''
       }
+    },
+    submitForm() {
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {
           if (valid) {
@@ -342,26 +354,7 @@ export default {
       }
     },
     draftForm() {
-      if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
-        this.$message({
-          message: '请填写必要的标题和内容',
-          type: 'warning'
-        })
-        return
-      }
-      var idss = ','
-      for (const id in this.ids) {
-        idss += this.ids[id] + ','
-      }
-      this.postForm.labelid = idss
       this.postForm.status = '草稿'
-      if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.plateid === '' || this.postForm.labelid === ',') {
-        this.$message({
-          message: '作者和标签为必传项',
-          type: 'error'
-        })
-        return
-      }
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {
           if (valid) {

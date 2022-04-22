@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.category" :placeholder="$t('table.category')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.category" maxlength="20" :placeholder="$t('table.category')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.rootid" :placeholder="$t('table.root')" style="width: 200px" clearable class="filter-item">
         <el-option v-for="(item, key) in rootOptions" :key="key" :label="item" :value="key" />
       </el-select>
@@ -102,7 +102,7 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
-  name: 'ComplexTable',
+  name: 'CategoryList',
   components: { Pagination },
   directives: { waves },
   filters: {

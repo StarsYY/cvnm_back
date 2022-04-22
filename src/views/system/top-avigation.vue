@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" maxlength="10" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -71,7 +71,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
         <el-form-item :label="$t('table.name')" prop="name">
-          <el-input v-model="temp.name" show-word-limit maxlength="100" placeholder="名称" clearable />
+          <el-input v-model="temp.name" show-word-limit maxlength="10" placeholder="名称" clearable />
         </el-form-item>
         <el-form-item :label="$t('table.jump')" prop="jump">
           <el-input v-model="temp.jump" show-word-limit maxlength="250" placeholder="跳转路径" clearable @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />

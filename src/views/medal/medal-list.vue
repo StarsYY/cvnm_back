@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.title" maxlength="20" :placeholder="$t('table.name')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-input v-model="listQuery.introduction" :placeholder="$t('table.describe')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -109,7 +109,7 @@
           />
         </el-form-item>
         <el-form-item :label="$t('table.name')" prop="name">
-          <el-input v-model="temp.name" show-word-limit maxlength="10" placeholder="名称" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.name" show-word-limit maxlength="20" placeholder="名称" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
         <el-form-item :label="$t('table.describe')" prop="describe">
           <el-input v-model="temp.describe" :autosize="{ minRows: 2 }" clearable show-word-limit maxlength="50" type="textarea" placeholder="描述" />

@@ -19,11 +19,11 @@
         />
       </div>
       <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 40px" label-width="90px" label="昵称:" prop="nickname">
-        <el-input v-model="dataAdd.nickname" maxlength="50" type="text" class="cs-text" autosize placeholder="请输入昵称" />
+        <el-input v-model="dataAdd.nickname" maxlength="20" type="text" class="cs-text" autosize placeholder="请输入昵称" />
         <span v-show="nicknameShortLength" class="word-counter">{{ nicknameShortLength }}words</span>
       </el-form-item>
       <el-form-item v-if="!edit" style="margin-left: 40px; margin-top: 15px" label-width="90px" label="密码:" prop="password">
-        <el-input v-model="dataAdd.password" maxlength="20" type="password" class="cs-text" placeholder="请输入密码" show-password />
+        <el-input v-model="dataAdd.password" minlength="6" maxlength="32" type="password" class="cs-text" placeholder="请输入密码" show-password />
       </el-form-item>
       <el-form-item style="margin-left: 40px; margin-top: 15px" label-width="145px" label="是否为管理员:">
         <el-switch
@@ -122,7 +122,7 @@ export default {
         nickname: [{ required: true, message: '昵称不能为空', trigger: 'blur' }],
         password: [
           { required: true, message: '密码不能为空', trigger: 'blur' },
-          { pattern: /^\S{6,32}$/, message: '密码长度位 6-20 位', trigger: 'blur' },
+          { pattern: /^\S{6,32}$/, message: '密码长度位 6-32 位', trigger: 'blur' },
           { pattern: /^\w+$/, message: '密码只能由数字、字母、下划线组成', trigger: 'blur' }
         ],
         phone: [

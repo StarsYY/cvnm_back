@@ -21,7 +21,7 @@
       <el-col :xs="19" :sm="19" :md="19" :lg="19" :xl="19">
         <div class="right-container">
           <div class="filter-container">
-            <el-input v-model="listQuery.label" :placeholder="$t('table.label')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+            <el-input v-model="listQuery.label" maxlength="20" :placeholder="$t('table.label')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
             <el-select v-model="rid" :placeholder="$t('table.root')" style="width: 200px" clearable class="filter-item" @change="selectRoot">
               <el-option v-for="item in rootOptions" :key="item.id" :label="item.root" :value="item.id" />
             </el-select>
@@ -343,6 +343,7 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
+      this.cids2 = this.temp.categoryid.substring(1, this.temp.categoryid.length - 1).split(',')
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {

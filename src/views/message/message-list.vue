@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.nickname" :placeholder="$t('table.sendername')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.nickname" maxlength="20" :placeholder="$t('table.sendername')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-input v-model="listQuery.introduction" :placeholder="$t('table.content')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.label" :placeholder="$t('table.receivename')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.label" maxlength="20" :placeholder="$t('table.receivename')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.status" :placeholder="$t('table.type')" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in isOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>

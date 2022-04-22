@@ -16,12 +16,12 @@
         @crop-success="cropSuccess"
       />
       <el-form-item style="margin-left: 40px;" prop="username">
-        <MDinput v-model="dataAdd.username" :maxlength="100" name="name" required>
+        <MDinput v-model="dataAdd.username" :maxlength="20" name="name" required>
           Username
         </MDinput>
       </el-form-item>
       <el-form-item style="margin-left: 40px;" prop="password">
-        <MDinput v-model="dataAdd.password" type="password" :maxlength="100" name="pass" required>
+        <MDinput v-model="dataAdd.password" type="password" :minlength="6" :maxlength="32" name="pass" required>
           Password
         </MDinput>
       </el-form-item>

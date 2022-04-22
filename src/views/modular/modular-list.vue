@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.modular" :placeholder="$t('table.modular')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.modular" maxlength="20" :placeholder="$t('table.modular')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -35,6 +35,11 @@
           <span class="link-type" @click="handleUpdate(row)">{{ row.modular }}</span>
         </template>
       </el-table-column>
+      <el-table-column :label="$t('table.superiorMo')" min-width="100px">
+        <template slot-scope="{row}">
+          {{ row.superior }}
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('table.createtime')" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createtime | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
@@ -66,7 +71,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 75%; margin-left: 50px">
         <el-form-item :label="$t('table.modular')" prop="modular">
-          <el-input v-model="temp.modular" show-word-limit maxlength="10" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.modular" show-word-limit maxlength="20" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
         <el-form-item :label="$t('table.ancestorM')">
           <el-cascader ref="modularCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 100%" @change="setAncestor" />
@@ -209,6 +214,7 @@ export default {
               duration: 2000
             })
             this.list.splice(this.list.length, 0, response.data.modular)
+            this.total += 1
             this.options = response.data.optionModular
           })
         }
@@ -234,7 +240,6 @@ export default {
             return
           }
           updateModular(tempData).then(response => {
-            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -242,7 +247,8 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.total += 1
+            const index = this.list.findIndex(v => v.id === this.temp.id)
+            this.list.splice(index, 1, response.data.modular)
             this.options = response.data.optionModular
           })
         }

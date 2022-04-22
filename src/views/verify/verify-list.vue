@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.nickname" :placeholder="$t('table.nickname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" :placeholder="$t('table.rname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.nickname" maxlength="20" :placeholder="$t('table.nickname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" maxlength="20" :placeholder="$t('table.rname')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.position" :placeholder="$t('table.position')" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
@@ -65,12 +65,12 @@
       </el-table-column>
       <el-table-column :label="$t('table.account')" prop="name" width="180px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.account }}</span>  
+          <span>{{ row.account }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.email')" prop="name" width="210px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.email }}</span>  
+          <span>{{ row.email }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" fixed="right" align="center" width="230" class-name="small-padding fixed-width">

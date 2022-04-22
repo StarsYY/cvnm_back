@@ -17,12 +17,15 @@
         <el-row>
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="name">
-              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
+              <MDinput v-model="postForm.name" :maxlength="20" name="name" required>
                 课程名称
               </MDinput>
             </el-form-item>
 
-            <el-form-item :label="$t('table.modular')">
+            <el-form-item :label="$t('table.modular')" prop="modularid">
+              <div>
+                <el-input v-model="postForm.modularid" type="text"></el-input>
+              </div>
               <el-cascader ref="plateCascader" v-model="postForm.modularid" :options="options" :props="props" clearable style="width: 420px" @change="setAncestor" />
             </el-form-item>
             <br>
@@ -30,7 +33,10 @@
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="9">
-                  <el-form-item label-width="40px" label="作者" class="postInfo-container-item">
+                  <el-form-item label-width="40px" label="作者" class="postInfo-container-item" prop="userid">
+                    <div>
+                      <el-input v-model="postForm.userid" type="text" />
+                    </div>
                     <el-select v-model="author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="搜索" @change="changeId">
                       <el-option v-for="(item, key) in userListOptions" :key="key" :label="item" :value="key" />
                     </el-select>
@@ -38,13 +44,15 @@
                 </el-col>
 
                 <el-col :span="9">
-                  <el-form-item label-width="120px" label="关键字" class="postInfo-container-item">
-                    <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择关键字">
+                  <el-form-item label-width="120px" label="关键字" class="postInfo-container-item" prop="labelid">
+                    <div>
+                      <el-input v-model="postForm.labelid" type="text" />
+                    </div>
+                    <el-select v-model="ids" multiple clearable style="width: 250px" class="filter-item" placeholder="请选择关键字" @change="setLabelId">
                       <el-option v-for="(item, key) in labelOptions" :key="key" :label="item" :value="key" />
                     </el-select>
                   </el-form-item>
                 </el-col>
-
               </el-row>
             </div>
 
@@ -70,7 +78,10 @@
           <Tinymce ref="editor" v-model="postForm.introduction" :height="400" />
         </el-form-item>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="40px" label="封面">
+        <el-form-item style="margin-bottom: 40px" label-width="40px" label="封面" prop="cover">
+          <div>
+            <el-input v-model="postForm.cover" type="text" />
+          </div>
           <div class="my-upload">
             <div v-if="showImage" class="my-cover" @click="toggleShow">
               <div style="margin-bottom: 16px">
@@ -160,7 +171,13 @@ export default {
       userListOptions: [],
       rules: {
         name: [{ validator: validateRequire }],
-        introduction: [{ validator: validateRequire }]
+        introduction: [{ validator: validateRequire }],
+        modularid: [{ required: true, message: '请选择一个板块', trigger: 'change' }],
+        labelid: [
+          { required: true, message: '至少添加一个标签', trigger: 'change' }
+        ],
+        userid: [{ required: true, message: '请选择一个作者', trigger: 'change' }],
+        cover: [{ required: true, message: '请设置一个封面', trigger: 'change' }],
       },
       labelOptions: null,
       tempRoute: {},
@@ -249,6 +266,16 @@ export default {
     changeId() {
       this.postForm.userid = this.author
     },
+    setLabelId() {
+      var idss = ','
+      for (const id in this.ids) {
+        idss += this.ids[id] + ','
+      }
+      this.postForm.labelid = idss
+      if(this.postForm.labelid == ',') {
+        this.postForm.labelid = ''
+      }
+    },
     setVideo() {
       this.video = this.$refs.upload.sendUploaderToCourseAdd()
       if(this.postForm.num === 0 && this.video.length === 0) {
@@ -264,18 +291,6 @@ export default {
     submitForm() {
       if(!this.setVideo()) {
         return false
-      }
-      var idss = ','
-      for (const id in this.ids) {
-        idss += this.ids[id] + ','
-      }
-      this.postForm.labelid = idss
-      if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.modularid === '' || this.postForm.labelid === ',') {
-        this.$message({
-          message: '作者、关键字和模块为必传项',
-          type: 'error'
-        })
-        return
       }
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {
@@ -322,26 +337,6 @@ export default {
     draftForm() {
       if(!this.setVideo()) {
         return false
-      }
-      if (this.postForm.name.length === 0) {
-        this.$message({
-          message: '请填写课程名称',
-          type: 'warning'
-        })
-        return
-      }
-      var idss = ','
-      for (const id in this.ids) {
-        idss += this.ids[id] + ','
-      }
-      this.postForm.labelid = idss
-      this.postForm.status = '草稿'
-      if (this.postForm.userid === '' || this.postForm.labelid === '' || this.postForm.modularid === '' || this.postForm.labelid === ',') {
-        this.$message({
-          message: '作者和标签为必传项',
-          type: 'error'
-        })
-        return
       }
       if (this.$route.params.id > 0) {
         this.$refs.postForm.validate(valid => {

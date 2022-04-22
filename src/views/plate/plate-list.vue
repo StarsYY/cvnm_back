@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.plate" :placeholder="$t('table.plate')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.plate" maxlength="20" :placeholder="$t('table.plate')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -115,7 +115,7 @@
           />
         </el-form-item>
         <el-form-item :label="$t('table.plate')" prop="plate">
-          <el-input v-model="temp.plate" show-word-limit maxlength="15" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
+          <el-input v-model="temp.plate" show-word-limit maxlength="20" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" />
         </el-form-item>
         <el-form-item :label="$t('table.ancestor')">
           <el-cascader ref="plateCascader" v-model="temp.ancestor" :options="options" :props="props" clearable style="width: 100%" @change="setAncestor" />
@@ -145,7 +145,7 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
-  name: 'ComplexTable',
+  name: 'PlateList',
   components: { MyUpload, Pagination },
   directives: { waves },
   filters: {
@@ -290,6 +290,7 @@ export default {
               duration: 2000
             })
             this.list.splice(this.list.length, 0, response.data.plate)
+            this.total += 1
             this.options = response.data.optionPlate
           })
         }
@@ -321,8 +322,10 @@ export default {
             })
             return
           }
-          updatePlate(tempData).then(() => {
-            this.getList()
+          updatePlate(tempData).then(response => {
+            const index = this.list.findIndex(v => v.id === this.temp.id)
+            this.list.splice(index, 1, response.data.plate)
+            this.options = response.data.optionPlate
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',

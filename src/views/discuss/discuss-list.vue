@@ -2,8 +2,8 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.discuss" :placeholder="$t('table.discuss')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.course" :placeholder="$t('table.course')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.nickname" :placeholder="$t('table.username')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.course" maxlength="120" :placeholder="$t('table.course')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.nickname" maxlength="20" :placeholder="$t('table.username')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.status" :placeholder="$t('table.status')" clearable class="filter-item" style="width: 130px">
         <el-option v-for="item in statusOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>

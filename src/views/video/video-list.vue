@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.filename" :placeholder="$t('table.filename')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" :placeholder="$t('table.course')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" maxlength="120" :placeholder="$t('table.course')" clearable style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 150px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -81,9 +81,6 @@ export default {
         deleted: 'danger'
       }
       return statusMap[status]
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
     }
   },
   data() {
@@ -149,7 +146,7 @@ export default {
           type: 'success',
           duration: 2000
         })
-        this.list.splice(index, 1);
+        this.list.splice(index, 1)
         this.total -= 1
       })
     },
