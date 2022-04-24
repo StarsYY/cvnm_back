@@ -46,7 +46,7 @@ import { uploadAdminAvatar } from '@/api/upload'
 import MyUpload from 'vue-image-crop-upload'
 
 export default {
-  name: 'AdminAdd',
+  name: 'AdminEdit',
   components: { MDinput, MyUpload, PanThumb },
 
   data() {

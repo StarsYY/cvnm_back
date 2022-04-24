@@ -123,7 +123,7 @@ export const asyncRoutes = [
       {
         path: 'admin-edit/:id',
         component: () => import('@/views/admin/admin-add'),
-        name: 'AdminAdd',
+        name: 'AdminEdit',
         meta: { title: 'adminedit' },
         hidden: true
       }
@@ -152,7 +152,7 @@ export const asyncRoutes = [
       {
         path: 'user-edit/:id',
         component: () => import('@/views/user/user-add'),
-        name: 'UserAdd',
+        name: 'UserEdit',
         meta: { title: 'useredit' },
         hidden: true
       }

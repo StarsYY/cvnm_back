@@ -83,7 +83,7 @@ import MyUpload from 'vue-image-crop-upload'
 import PanThumb from '@/components/PanThumb'
 
 export default {
-  name: 'UserAdd',
+  name: 'UserEdit',
   components: { MyUpload, PanThumb },
   data() {
     return {
